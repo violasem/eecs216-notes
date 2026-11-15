@@ -75,6 +75,8 @@ canvas{width:100%;height:220px;display:block}
 .notes p,.notes li{max-width:74ch}.notes h4{font-family:var(--f-display);font-size:16px;margin:14px 0 4px}
 .eq{font-family:var(--f-mono);font-size:14px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;padding:8px 12px;margin:8px 0;overflow-x:auto;line-height:1.7}
 .nt{border-collapse:collapse;margin:8px 0;font-size:14px;display:block;overflow-x:auto}.nt td,.nt th{border:1px solid var(--line);padding:4px 10px;text-align:left}.nt th{background:var(--accent-soft)}
+.trap{background:color-mix(in srgb,var(--warn) 10%,transparent);border-left:3px solid var(--warn);border-radius:6px;padding:8px 12px;margin:10px 0;font-size:14px}
+h4.more{border-top:1px dashed var(--line);padding-top:12px;margin-top:18px;color:var(--accent)}
 .nx{background:var(--accent-soft);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:14px}
 code{font-family:var(--f-mono);font-size:13px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -264,6 +266,145 @@ const NOTES={
 <p><b>Example 6.9 / Definition 6.4 (RMS time duration).</b> The same idea for how spread out x(t) is in time:</p>
 <div class="eq">τ<sub>RMS</sub> = √( ∫(t − t<sub>0</sub>)²|x(t)|²dt / ∫|x(t)|²dt ), &nbsp;&nbsp; t<sub>0</sub> = ∫t|x(t)|²dt / ∫|x(t)|²dt &nbsp;&nbsp;(6.29–6.30)</div>
 <p>t<sub>0</sub> estimates where the signal has most of its energy.</p>`
+};
+
+/* ---------- extra depth: derivations, worked examples, traps ---------- */
+const MORE={
+'6.1':`
+<h4>Worked example A — periodic signal through an ideal HPF</h4>
+<p>The square wave from Ch 4 (T<sub>0</sub> = 2, ω<sub>0</sub> = π): x(t) = ½ + Σ<sub>n odd</sub> (2/nπ) sin(nπt). Its frequencies are 0, π ≈ 3.14, 3π ≈ 9.42, 5π ≈ 15.7, …</p>
+<p>Ideal HPF, ω<sub>c</sub> = 4, gain 1. Check each: 0 &lt; 4 ✗, π &lt; 4 ✗, 3π &gt; 4 ✓, 5π ✓, … So</p>
+<div class="eq">y(t) = Σ<sub>n odd, n ≥ 3</sub> (2/nπ) sin(nπt) &nbsp;=&nbsp; x(t) − ½ − (2/π)sin(πt)</div>
+<p>The HPF removed the average and the fundamental; only the sharp-edge detail is left.</p>
+<h4>Worked example B — ideal BPF and output power</h4>
+<p>x(t) = Σ<sub>n≥0</sub> 2/(n²+1) · cos(2πnt + nπ) (sample-exam signal). Harmonics at 2πn: 0, 6.28, 12.57, 18.85, … Ideal BPF passing 5 &lt; |ω| &lt; 15:</p>
+<div class="eq">kept: n = 1 (6.28), n = 2 (12.57) &nbsp;⇒&nbsp; y(t) = cos(2πt + π) + (2/5)cos(4πt + 2π)<br>P<sub>y</sub> = 1²/2 + (2/5)²/2 = 0.5 + 0.08 = 0.58</div>
+<p>The DC term (n = 0) is blocked by a BPF, unlike the LPF version of this problem (P = 229/50).</p>
+<h4>Worked example C — non-periodic input</h4>
+<p>x(t) = e<sup>−t</sup>u(t) ↔ X = 1/(1 + jω) into an ideal LPF with ω<sub>c</sub> = 1. The output spectrum is Y = X for |ω| &lt; 1 and 0 outside. Output energy by Parseval: E<sub>y</sub> = (1/2π)∫<sub>−1</sub><sup>1</sup> dω/(1+ω²) = (1/2π)·2tan<sup>−1</sup>(1) = (1/2π)(π/2) = <b>1/4</b>, half of E<sub>x</sub> = 1/2.</p>
+<div class="trap"><b>Exam traps.</b> (1) DC (ω = 0) always passes an LPF and never passes an HPF or BPF. (2) Compare the <b>rad/s</b> harmonic nω<sub>0</sub> with ω<sub>c</sub>, not n itself. (3) A frequency exactly at the cut-off is ambiguous: problems avoid it, so recheck your arithmetic if you land on it. (4) "Absolute bandwidth ω<sub>B</sub>" of an ideal LPF means its cut-off.</div>`,
+
+'6.2a':`
+<h4>Derivation of filter delay for the RC filter</h4>
+<p>∠H = −tan<sup>−1</sup>(ωRC). Using d/dx tan<sup>−1</sup>x = 1/(1+x²):</p>
+<div class="eq">D(ω) = d∠H/dω = −RC / (1 + (ωRC)²)</div>
+<p>At low ω the slope is ≈ −RC, i.e. a delay of about RC seconds. As ω grows the slope changes, so different frequencies are delayed by different amounts: the RC filter is <b>not</b> exactly distortionless.</p>
+<h4>Worked example — recognize a pure delay</h4>
+<p>H(jω) = 3e<sup>−j0.5ω</sup> for |ω| &lt; 10, 0 otherwise. Input x(t) bandlimited to |ω| &lt; 10. Then Y = 3e<sup>−j0.5ω</sup>X, so <b>y(t) = 3x(t − 0.5)</b>: scaled by 3, delayed by 0.5 s, same shape.</p>
+<h4>Why "just delay more" doesn't rescue the ideal LPF</h4>
+<p>h(0) = (ω<sub>c</sub>/π)·sin(−ω<sub>c</sub>t<sub>d</sub>)/(−ω<sub>c</sub>t<sub>d</sub>), which is generally nonzero, and the sinc tail on the left decays only like 1/|t|. For any finite t<sub>d</sub> there are infinitely many t &lt; 0 with h(t) ≠ 0. Truncating the tail (forcing h = 0 for t &lt; 0) changes H, so it is no longer ideal: you get ripple and a transition band, which is exactly the relaxed spec of the next page.</p>
+<div class="trap"><b>Exam traps.</b> (1) Linear phase must go through the origin with slope −t<sub>d</sub>; a constant phase offset (∠H = −π/2) is <b>not</b> a pure delay. (2) Causality is about h(t) for t &lt; 0, not about |H|. (3) The sinc here uses the course definition sinc(x) = sin(πx)/(πx), so h = (ω<sub>c</sub>/π)sinc(ω<sub>c</sub>(t−t<sub>d</sub>)/π).</div>`,
+
+'6.2b':`
+<h4>Converting word specs and dB specs</h4>
+<table class="nt">
+<tr><th>Spec as written</th><th>Becomes</th></tr>
+<tr><td>passband ripple at most 1 dB</td><td>1 − δ<sub>1</sub> = 10<sup>−1/20</sup> = 0.891</td></tr>
+<tr><td>passband within ±0.5 dB</td><td>0.944 ≤ |H| ≤ 1.059</td></tr>
+<tr><td>stopband at least 40 dB down</td><td>δ<sub>2</sub> = 10<sup>−40/20</sup> = 0.01</td></tr>
+<tr><td>stopband at least 60 dB down</td><td>δ<sub>2</sub> = 0.001</td></tr>
+<tr><td>passband up to 2 kHz</td><td>ω<sub>p</sub> = 2π·2000 ≈ 12 566 rad/s</td></tr>
+</table>
+<p>Rule: |H| = 10<sup>dB/20</sup>. Every −20 dB is ×0.1.</p>
+<h4>Worked example — does a given filter meet the spec?</h4>
+<p>Spec: 1 − δ<sub>1</sub> = 0.9 for ω ≤ 1, δ<sub>2</sub> = 0.1 for ω ≥ 3. Test the RC filter H = 1/(1 + jω/1.2):</p>
+<div class="eq">|H(1)| = 1/√(1 + (1/1.2)²) = 1/√1.694 = 0.768 &nbsp;&lt; 0.9 &nbsp;✗<br>|H(3)| = 1/√(1 + 6.25) = 0.371 &nbsp;&gt; 0.1 &nbsp;✗</div>
+<p>A first-order filter is far too gentle. A 3rd-order Butterworth with ω<sub>0</sub> = 1.3 passes both (see 6.4.2). That is the whole motivation for higher-order design.</p>
+<div class="trap"><b>Exam traps.</b> (1) The spec has to hold over the <b>whole</b> band; for a monotonic filter like Butterworth it is enough to check the edges ω<sub>p</sub> and ω<sub>s</sub>. (2) Hz vs rad/s: multiply by 2π. (3) δ<sub>2</sub> is a gain, not dB; convert first.</div>`,
+
+'6.2c':`
+<h4>Full table for RC = 10<sup>−4</sup> s (corner 10<sup>4</sup> rad/s)</h4>
+<table class="nt">
+<tr><th>ω (rad/s)</th><th>ωRC</th><th>|H|</th><th>dB</th><th>∠H</th></tr>
+<tr><td>10²</td><td>0.01</td><td>≈ 1.000</td><td>≈ 0</td><td>−0.6°</td></tr>
+<tr><td>10³</td><td>0.1</td><td>0.995</td><td>−0.04</td><td>−5.7°</td></tr>
+<tr><td>10⁴</td><td>1</td><td>0.707</td><td>−3.0</td><td>−45°</td></tr>
+<tr><td>10⁵</td><td>10</td><td>0.0995</td><td>−20.0</td><td>−84.3°</td></tr>
+<tr><td>10⁶</td><td>100</td><td>0.0100</td><td>−40.0</td><td>−89.4°</td></tr>
+</table>
+<h4>Straight-line (asymptotic) Bode sketch</h4>
+<p>Magnitude: 0 dB flat until the corner, then a line falling at −20 dB/decade. The true curve is 3 dB below the corner of the two lines. Phase: 0° well below the corner, −45° at the corner, −90° well above (roughly from corner/10 to corner×10).</p>
+<h4>dB arithmetic</h4>
+<p>Gains in series multiply, so their dB values <b>add</b>: two identical RC stages (with a buffer between them) give −6 dB at 1/RC and −40 dB/decade. In general, 20log|H<sub>1</sub>H<sub>2</sub>| = 20log|H<sub>1</sub>| + 20log|H<sub>2</sub>|.</p>
+<h4>Companion: RC high-pass</h4>
+<p>Swap R and C (output across R): H = jωRC/(1 + jωRC). |H| = ωRC/√(1+(ωRC)²), ∠H = 90° − tan<sup>−1</sup>(ωRC). At ω = 1/RC: −3 dB and +45°; below the corner it rises at +20 dB/decade.</p>
+<div class="trap"><b>Exam traps.</b> (1) 20log for amplitude/voltage, 10log for power: −3 dB means amplitude ×0.707 but power ×½. (2) The corner of the RC filter is in rad/s: f<sub>c</sub> = 1/(2πRC) in Hz. (3) A "decade" is ×10 in ω, not +10.</div>`,
+
+'6.3':`
+<h4>Worked example — from an LCCDE to bode</h4>
+<p>y″ + 3y′ + 2y = 5x. Replace d/dt by s: (s² + 3s + 2)Y = 5X, so H = 5/(s² + 3s + 2): <code>N = [5]; D = [1 3 2]</code>. At ω = 0 the gain is 5/2 = 2.5 (+8 dB); the poles are s = −1, −2 (both in the left half plane, so the filter is stable and the FRF exists).</p>
+<h4>Worked example — numerator with s</h4>
+<p>H = 2s/(s² + 4s + 100): <code>N = [2 0]; D = [1 4 100]</code>. The trailing 0 in N is the missing constant term. This is a band-pass shape: 0 at DC, peak near ω = 10.</p>
+<div class="trap"><b>Exam traps.</b> (1) Descending powers. (2) Include zeros for missing powers in both N and D. (3) (jω)² = −ω² and (jω)³ = −jω³, so read real/imaginary parts carefully when going from H(jω) back to N(s), D(s).</div>`,
+
+'6.4':`
+<h4>Reading a mask</h4>
+<p>For a LPF mask with G<sub>1</sub> = 0.9, G<sub>2</sub> = 1, δ<sub>s</sub> = 0.1, ω<sub>p</sub> = 1000, ω<sub>s</sub> = 3000: the curve must stay between 0.9 and 1 for ω ≤ 1000 and below 0.1 for ω ≥ 3000. HPF masks mirror this (passband at high ω); BPF masks have two stopbands and one passband; BSF the reverse.</p>
+<h4>Poles for N = 3 (worked)</h4>
+<div class="eq">s<sub>k</sub> = e<sup>j(2k+2)π/6</sup>: &nbsp;s<sub>1</sub> = e<sup>j2π/3</sup> = −½ + j(√3/2), &nbsp;s<sub>2</sub> = e<sup>jπ</sup> = −1, &nbsp;s<sub>3</sub> = e<sup>j4π/3</sup> = −½ − j(√3/2)</div>
+<p>Pair the conjugates: (s − s<sub>1</sub>)(s − s<sub>3</sub>) = s² − 2Re{s<sub>1</sub>}s + |s<sub>1</sub>|² = s² + s + 1. So</p>
+<div class="eq">H(s) = 1 / [(s + 1)(s² + s + 1)] = 1 / (s³ + 2s² + 2s + 1)</div>
+<h4>Poles for N = 4</h4>
+<p>Angles 5π/8, 7π/8, 9π/8, 11π/8. Pairs give s² − 2cos(5π/8)s + 1 = s² + 0.765s + 1 and s² − 2cos(7π/8)s + 1 = s² + 1.848s + 1.</p>
+<h4>Why only the left half plane</h4>
+<p>|H(jω)|² = 1/(1 + ω<sup>2N</sup>). Writing ω = s/j gives 1/(1 + (−s²)<sup>N</sup>), whose 2N poles sit evenly on the unit circle. Half are in the left half plane and half in the right. Giving the left-half ones to H makes the filter causal and stable (Ch 3: poles of a causal stable system are in the LHP).</p>
+<div class="trap"><b>Exam traps.</b> (1) Angles in the formula are (2k + N − 1)π/(2N), with k starting at 1. (2) Conjugate pairs give real quadratic factors s² − 2Re{p}s + 1; the sign flips because Re{p} &lt; 0. (3) Odd N always includes the real pole at −1.</div>`,
+
+'6.4.1':`
+<h4>dB at a glance</h4>
+<p>For ω ≫ 1, |H| ≈ 1/ω<sup>N</sup>, so 20log|H| ≈ −20N·log<sub>10</sub>ω. Examples: N = 3 at ω = 10: 1/√(1 + 10⁶) ≈ 10<sup>−3</sup> = −60 dB. N = 2 at ω = 10: 1/√(1 + 10⁴) ≈ 0.01 = −40 dB.</p>
+<h4>Choosing real component values (Example 6.5 circuit)</h4>
+<p>Goal: 2nd-order Butterworth LPF with ω<sub>0</sub> = 1000 rad/s.</p>
+<ol>
+<li>RC = 1/ω<sub>0</sub> = 10<sup>−3</sup> s. Pick C = 0.1 µF ⇒ R = 10<sup>−3</sup>/10<sup>−7</sup> = 10 kΩ (both R's and both C's equal).</li>
+<li>3 − A = √2 ⇒ A = 1.586 = 1 + R<sub>4</sub>/R<sub>3</sub> ⇒ R<sub>4</sub>/R<sub>3</sub> = 0.586. Pick R<sub>3</sub> = 10 kΩ, R<sub>4</sub> = 5.86 kΩ.</li>
+<li>Result: H = 1.586 / [1 + √2(jω/1000) + (jω/1000)²]: Butterworth shape with passband gain 1.586 (+4 dB).</li>
+</ol>
+<h4>Gain values for a cascaded N = 4 design</h4>
+<p>Stage 1: 3 − A<sub>1</sub> = 0.765 ⇒ A<sub>1</sub> = 2.235. Stage 2: 3 − A<sub>2</sub> = 1.848 ⇒ A<sub>2</sub> = 1.152. Same RC = 1/ω<sub>0</sub> in both; overall DC gain A<sub>1</sub>A<sub>2</sub> = 2.575.</p>
+<div class="trap"><b>Exam traps.</b> (1) The Sallen-Key stage has passband gain A, not 1: a Butterworth "times A". (2) 3 − A must be positive (A &lt; 3) or the stage is unstable. (3) |H(jω<sub>0</sub>)| = 1/√2 regardless of N, so ω<sub>0</sub> is always the −3 dB frequency.</div>`,
+
+'6.4.2a':`
+<h4>Worked example — HPF, N = 2, ω<sub>0</sub> = 50 rad/s</h4>
+<div class="eq">|H| = 1/√(1 + (50/ω)⁴)<br>ω = 25: 1/√(1 + 16) = 0.243 (−12.3 dB) &nbsp;&nbsp; ω = 50: 0.707 (−3 dB) &nbsp;&nbsp; ω = 100: 1/√(1 + 1/16) = 0.970</div>
+<h4>Worked example — BPF, N = 1, ω<sub>1</sub> = 2, ω<sub>2</sub> = 8</h4>
+<p>Substitution u(ω) = (ω² − 16)/(6ω), |H| = 1/√(1 + u²):</p>
+<div class="eq">ω = 4: u = 0 → |H| = 1 (center √(2·8) = 4)<br>ω = 2: u = (4 − 16)/12 = −1 → 0.707 &nbsp;&nbsp; ω = 8: u = (64 − 16)/48 = 1 → 0.707<br>ω = 1: u = −15/6 = −2.5 → 0.371 &nbsp;&nbsp; ω = 16: u = 240/96 = 2.5 → 0.371</div>
+<p>Notice the geometric symmetry: 1 and 16 (product 16 = ω<sub>1</sub>ω<sub>2</sub>) have equal gain.</p>
+<h4>Worked example — BSF with the same edges, N = 1</h4>
+<div class="eq">v(ω) = 6ω/(16 − ω²): &nbsp;ω = 4 → v = ∞ → |H| = 0 (notch) &nbsp;&nbsp; ω = 2 → v = 1 → 0.707 &nbsp;&nbsp; ω = 1 → v = 0.4 → 0.928</div>
+<div class="trap"><b>Exam traps.</b> (1) BPF/BSF centers are the <b>geometric</b> mean √(ω<sub>1</sub>ω<sub>2</sub>), not (ω<sub>1</sub>+ω<sub>2</sub>)/2. (2) A band filter from an Nth-order prototype has order 2N. (3) In the BPF formula ω<sub>2</sub> − ω<sub>1</sub> is the 3 dB bandwidth.</div>`,
+
+'6.4.2b':`
+<h4>Worked example — HPF design</h4>
+<p>G = 1, passband |H| ≥ 0.9 for ω ≥ ω<sub>p</sub> = 1000, stopband |H| ≤ 0.1 for ω ≤ ω<sub>s</sub> = 300. HPF: |H| = 1/√(1 + (ω<sub>0</sub>/ω)<sup>2N</sup>).</p>
+<ol>
+<li>α = (1/0.9)² − 1 = 0.2346, β = (1/0.1)² − 1 = 99 (same as before).</li>
+<li>Passband: (ω<sub>0</sub>/ω<sub>p</sub>)<sup>2N</sup> ≤ α. Stopband: (ω<sub>0</sub>/ω<sub>s</sub>)<sup>2N</sup> ≥ β.</li>
+<li>Divide: (ω<sub>p</sub>/ω<sub>s</sub>)<sup>2N</sup> ≥ β/α = 422 ⇒ 2N ≥ ln 422 / ln(10/3) = 6.045/1.204 = 5.02 ⇒ N ≥ 2.51 ⇒ <b>N = 3</b>.</li>
+<li>ω<sub>0</sub> ≤ ω<sub>p</sub>α<sup>1/6</sup> = 1000(0.785) = 785 and ω<sub>0</sub> ≥ ω<sub>s</sub>β<sup>1/6</sup> = 300(2.150) = 645 ⇒ <b>ω<sub>0</sub> ∈ [645, 785]</b>.</li>
+<li>Check ω<sub>0</sub> = 700: at 1000, (0.7)⁶ = 0.118 → |H| = 0.946 ✓. At 300, (2.333)⁶ = 161 → |H| = 0.079 ✓.</li>
+</ol>
+<h4>Worked example — BPF order</h4>
+<p>BPF with 3 dB edges ω<sub>1</sub> = 1000, ω<sub>2</sub> = 2000, and |H| ≤ 0.1 required at ω = 4000. Map 4000 to the prototype: u = (4000² − 2·10⁶)/(4000·1000) = 14·10⁶/4·10⁶ = 3.5. Need 1/√(1 + 3.5<sup>2N</sup>) ≤ 0.1 ⇒ 3.5<sup>2N</sup> ≥ 99 ⇒ 2N ≥ ln 99/ln 3.5 = 4.595/1.253 = 3.67 ⇒ <b>N = 2</b> (a 4th-order band-pass circuit).</p>
+<h4>When G<sub>2</sub> &gt; 1</h4>
+<p>Spec 0.9 ≤ |H| ≤ 1.1: take G = G<sub>2</sub> = 1.1, so α = (1.1/0.9)² − 1 = 0.494 and β = (1.1/δ<sub>s</sub>)² − 1. Allowing more passband ripple makes α bigger, which lowers the required N.</p>
+<div class="trap"><b>Exam traps.</b> (1) Round N <b>up</b>, then re-check both edges with a chosen ω<sub>0</sub>. (2) Square the ratios: α = (G/G<sub>1</sub>)² − 1, not G/G<sub>1</sub> − 1. (3) For an HPF the passband edge is the larger frequency. (4) ln or log<sub>10</sub> both work in the N formula, as long as you use the same one top and bottom.</div>`,
+
+'6.5':`
+<h4>Worked example — the sample-exam triangle, all four measures</h4>
+<p>X = 2 − |ω| for |ω| &lt; 2. Use ∫<sub>0</sub><sup>2</sup>(2 − ω)²dω = 8/3 and ∫<sub>0</sub><sup>2</sup>ω²(2 − ω)²dω = 32/3 − 16 + 32/5 = 16/15.</p>
+<div class="eq">absolute = 2 &nbsp;&nbsp; 3 dB: 2 − ω = 2/√2 ⇒ ω = 2 − √2 ≈ 0.586<br>noise-eq. = (8/3)/|X(0)|² = (8/3)/4 = 2/3 &nbsp;&nbsp; RMS = √((16/15)/(8/3)) = √0.4 ≈ 0.632</div>
+<p>Energy in |ω| ≤ 1: ∫<sub>0</sub><sup>1</sup>(2−ω)² = 7/3, fraction (7/3)/(8/3) = 7/8 (sample-exam answer (d)).</p>
+<h4>Worked example — first-order spectrum X = 1/(1 + jω/a)</h4>
+<div class="eq">|X|² = 1/(1 + ω²/a²) &nbsp;&nbsp; absolute = ∞ &nbsp;&nbsp; 3 dB = a &nbsp;&nbsp; NE = ∫<sub>0</sub><sup>∞</sup>dω/(1 + ω²/a²) = aπ/2 &nbsp;&nbsp; RMS = ∞ (∫ω²|X|² diverges)</div>
+<h4>Worked example — bandpass spectrum</h4>
+<p>|X| = 1 for 9 &lt; |ω| &lt; 11, else 0. Positive side: center ω<sub>c</sub> = ∫ω|X|²/∫|X|² = 10.</p>
+<div class="eq">absolute = 11 − 9 = 2 &nbsp;&nbsp; 3 dB = 2 &nbsp;&nbsp; NE = ∫|X|²/|X(ω<sub>c</sub>)|² = 2<br>RMS = √( ∫<sub>9</sub><sup>11</sup>(ω−10)²dω / 2 ) = √((2/3)/2) = 1/√3 ≈ 0.577</div>
+<h4>Worked examples — RMS time duration</h4>
+<p>x = rect(t) (width 1): t<sub>0</sub> = 0, τ = √(∫<sub>−½</sub><sup>½</sup>t²dt / 1) = √(1/12) ≈ 0.289.</p>
+<p>x = e<sup>−t</sup>u(t): |x|² = e<sup>−2t</sup>, energy ½. t<sub>0</sub> = ∫te<sup>−2t</sup>/(½) = (¼)/(½) = ½. ∫(t − ½)²e<sup>−2t</sup>dt = ⅛, so τ = √(⅛/½) = ½.</p>
+<div class="trap"><b>Exam traps.</b> (1) Integrate |X|², not |X|, in NE and RMS. (2) Divide by |X(0)|² (squared peak). (3) 3 dB is where |X| = peak/√2, i.e. |X|² = peak²/2. (4) Bandpass: measure widths as ω<sub>2</sub> − ω<sub>1</sub> on the positive side only. (5) Modulating by cos ω<sub>c</sub>t doubles the absolute bandwidth (each copy carries both sidebands).</div>`
 };
 
 /* ---------- lessons ---------- */
@@ -571,7 +712,7 @@ let cur=0;
 function show(i){
   cur=i;const nav=$('#nav');nav.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-current',k===i));
   const m=$('#main');m.innerHTML='';const sec=document.createElement('section');sec.className='lesson';
-  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div><details class="notes" open><summary>From the notes · §${L[i].s}</summary>${NOTES[L[i].k]||''}</details>`;
+  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div><details class="notes" open><summary>From the notes · §${L[i].s}</summary>${NOTES[L[i].k]||''}${MORE[L[i].k]?'<h4 class="more">Going deeper: derivations, worked examples, exam traps</h4>'+MORE[L[i].k]:''}</details>`;
   const body=document.createElement('div');body.style.display='flex';body.style.flexDirection='column';body.style.gap='16px';sec.appendChild(body);m.appendChild(sec);
   L[i].build.call(L[i],body);
   const nr=document.createElement('div');nr.className='navrow';
