@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EECS 216 Notes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root{--bg:#f3f6f7;--panel:#fff;--ink:#14212b;--muted:#5b6b75;--line:#d5dee3;--c6:#0f7c8c;--c7:#5b47b8;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1519;--panel:#142027;--ink:#e3ecef;--muted:#93a6af;--line:#24343c;--c6:#43c2d1;--c7:#a593ff;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;padding:48px max(16px,env(safe-area-inset-left,0px)) 60px}
+main{max-width:900px;margin:0 auto}
+h1{font-family:"Space Grotesk",system-ui,sans-serif;font-size:clamp(30px,5vw,44px);margin:0}
+.lead{color:var(--muted);max-width:62ch;margin:8px 0 32px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;text-decoration:none;color:inherit}
+a.card:hover{border-color:var(--c)}
+.num{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--c)}
+.card h2{font-family:"Space Grotesk",system-ui,sans-serif;font-size:21px;margin:0}
+.card p{margin:0;color:var(--muted);font-size:14px}
+.soon{opacity:.55}
+footer{margin-top:40px;color:var(--muted);font-size:13px}
+</style></head><body><main>
+<h1>EECS 216 Notes</h1>
+<p class="lead">Interactive study notes for Signals and Systems, following the course's typeset notes section by section. Each page has the notes, a live plot you control, and check questions.</p>
+<div class="grid">
+<div class="card soon" style="--c:var(--muted)"><span class="num">Chapter 4</span><h2>Fourier Series</h2><p>Coming soon</p></div>
+<div class="card soon" style="--c:var(--muted)"><span class="num">Chapter 5</span><h2>Fourier Transform</h2><p>Coming soon</p></div>
+<a class="card" href="chapter6/" style="--c:var(--c6)"><span class="num">Chapter 6</span><h2>Filters and Filtering</h2><p>Ideal and real filters, Bode plots, Butterworth design, bandwidth. 10 pages.</p></a>
+<a class="card" href="chapter7/" style="--c:var(--c7)"><span class="num">Chapter 7</span><h2>Amplitude Modulation</h2><p>SC-AM, coherent demodulation, LC-AM, superheterodyne radio, QAM and SSB. 6 pages.</p></a>
+</div>
+<footer>Personal study notes for EECS 216 at the University of Michigan. Not official course material.</footer>
+</main></body></html>
