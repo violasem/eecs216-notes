@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chapter 5 Fourier Transform Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a bench instrument. Left rail of six lessons, right panel = one lesson: idea, live scope, check questions. */
+:root{
+  --bg:#f3f6f7; --panel:#ffffff; --ink:#14212b; --muted:#5b6b75; --line:#d5dee3;
+  --accent:#2e7d32; --accent-soft:#e3f2e4; --keep:#1f8a4c; --drop:#b9c4ca; --warn:#c2412d; --trace:#14212b; --grid:#e7edf0;
+  --f-display:"Space Grotesk",system-ui,sans-serif; --f-body:"Inter",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1519; --panel:#142027; --ink:#e3ecef; --muted:#93a6af; --line:#24343c;
+  --accent:#6fd27a; --accent-soft:#17331b; --keep:#4fd08a; --drop:#3a4a52; --warn:#ff7a62; --trace:#e3ecef; --grid:#1c2a31; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1519; --panel:#142027; --ink:#e3ecef; --muted:#93a6af; --line:#24343c;
+  --accent:#6fd27a; --accent-soft:#17331b; --keep:#4fd08a; --drop:#3a4a52; --warn:#ff7a62; --trace:#e3ecef; --grid:#1c2a31; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:270px minmax(0,1fr);gap:24px}
+@media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr)}}
+header{grid-column:1/-1}
+h1{font-family:var(--f-display);font-size:28px;margin:0;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);max-width:68ch}
+nav{display:flex;flex-direction:column;gap:6px;align-self:start;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+@media (max-width:820px){nav{position:static;flex-direction:row;overflow-x:auto;padding-bottom:4px}}
+nav button{all:unset;cursor:pointer;display:flex;gap:10px;align-items:baseline;padding:8px 12px;border-radius:8px;border:1px solid transparent;color:var(--muted)}
+nav button .n{font-family:var(--f-mono);font-size:12px;min-width:34px}
+nav button:hover{color:var(--ink);background:var(--panel)}
+nav button[aria-current="true"]{background:var(--panel);border-color:var(--line);color:var(--ink);font-weight:600}
+nav button:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{min-width:0}
+.lesson{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px clamp(16px,3vw,28px);display:flex;flex-direction:column;gap:16px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h2{font-family:var(--f-display);font-size:24px;margin:2px 0 0;text-wrap:balance}
+.idea{max-width:70ch;margin:0}
+.idea b{color:var(--ink)}
+.rule{background:var(--accent-soft);border-radius:8px;padding:10px 14px;font-family:var(--f-mono);font-size:14px;overflow-x:auto}
+.controls{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:end}
+.ctl{display:flex;flex-direction:column;gap:4px;min-width:150px}
+.ctl label{font-size:12.5px;color:var(--muted);font-weight:500}
+.ctl output{font-family:var(--f-mono);font-size:14px}
+input[type=range]{width:170px;accent-color:var(--accent)}
+select,input[type=number]{font:inherit;padding:5px 8px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:120px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:6px 11px;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel);font-weight:600}
+.scope{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.scope figure{margin:0;border:1px solid var(--line);border-radius:10px;padding:8px 10px 6px;background:var(--bg);min-width:0}
+.scope figcaption{font-size:12px;color:var(--muted);margin-bottom:4px}
+canvas{width:100%;height:220px;display:block}
+.readout{font-family:var(--f-mono);font-size:14px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 14px;overflow-x:auto;white-space:pre-wrap}
+.readout .ok{color:var(--keep);font-weight:600}.readout .bad{color:var(--warn);font-weight:600}
+.try{font-size:14px;color:var(--muted);margin:0}
+.try b{color:var(--ink)}
+.quiz{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:14px}
+.quiz h3{font-family:var(--f-display);font-size:16px;margin:0}
+.q p{margin:0 0 8px;font-weight:500}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opts button{all:unset;cursor:pointer;padding:7px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:var(--bg)}
+.opts button:hover{border-color:var(--accent)}
+.opts button.right{border-color:var(--keep);color:var(--keep);font-weight:600}
+.opts button.wrong{border-color:var(--warn);color:var(--warn);text-decoration:line-through}
+.fb{font-size:14px;margin-top:6px;color:var(--muted)}
+.fb.right{color:var(--keep)}.fb.wrong{color:var(--warn)}
+.navrow{display:flex;justify-content:space-between;gap:10px}
+.navrow button{all:unset;cursor:pointer;padding:8px 14px;border-radius:8px;border:1px solid var(--line);font-weight:500}
+.navrow button.next{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+.score{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.notes{border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:4px 18px 14px}
+.notes summary{cursor:pointer;font-family:var(--f-display);font-weight:700;padding:10px 0;color:var(--accent)}
+.notes p,.notes li{max-width:74ch}.notes h4{font-family:var(--f-display);font-size:16px;margin:14px 0 4px}
+.eq{font-family:var(--f-mono);font-size:14px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;padding:8px 12px;margin:8px 0;overflow-x:auto;line-height:1.7}
+.nt{border-collapse:collapse;margin:8px 0;font-size:14px;display:block;overflow-x:auto}.nt td,.nt th{border:1px solid var(--line);padding:4px 10px;text-align:left}.nt th{background:var(--accent-soft)}
+.trap{background:color-mix(in srgb,var(--warn) 10%,transparent);border-left:3px solid var(--warn);border-radius:6px;padding:8px 12px;margin:10px 0;font-size:14px}
+h4.more{border-top:1px dashed var(--line);padding-top:12px;margin-top:18px;color:var(--accent)}
+.nx{background:var(--accent-soft);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:14px}
+code{font-family:var(--f-mono);font-size:13px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.home{display:inline-block;margin-bottom:8px;color:var(--accent);text-decoration:none;font-weight:500}.home:hover{text-decoration:underline}
+:root{color-scheme:light}body{margin:0}
+</style>
+
+</head><body>
+<div class="wrap">
+<header><a class="home" href="../">← All chapters</a>
+  <h1>Chapter 5 Fourier Transform Lab</h1>
+  <p>Follows your typeset notes section by section (5.1 → 5.3.11). Each page opens with the detailed notes for that section, including Examples 5.1–5.10, then a live plot you control and check questions.</p>
+</header>
+<nav id="nav" aria-label="Sections"></nav>
+<main id="main"></main>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt=(x,d=3)=>!isFinite(x)?"∞":(Math.abs(x)<1e-9?"0":(+x.toFixed(d)).toString());
+const sq=x=>x*x;
+
+/* ---------- canvas plotting ---------- */
+function setup(c){const r=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;c.width=Math.max(10,r.width*dpr);c.height=Math.max(10,r.height*dpr);const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);return{g,w:r.width,h:r.height};}
+function axes(c,xr,yr,o={}){
+  const {g,w,h}=setup(c);const L=o.left??38,R=10,T=10,B=o.bottom??24;
+  const X=x=>L+(x-xr[0])/(xr[1]-xr[0])*(w-L-R), Y=y=>h-B-(y-yr[0])/(yr[1]-yr[0])*(h-T-B);
+  g.font='11px "JetBrains Mono",monospace';g.fillStyle=css('--muted');g.strokeStyle=css('--grid');g.lineWidth=1;
+  (o.xt||[]).forEach(([v,l])=>{g.beginPath();g.moveTo(X(v),T);g.lineTo(X(v),h-B);g.stroke();g.textAlign='center';g.fillText(l,X(v),h-B+14);});
+  (o.yt||[]).forEach(([v,l])=>{g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-R,Y(v));g.stroke();g.textAlign='right';g.fillText(l,L-5,Y(v)+4);});
+  g.strokeStyle=css('--muted');g.beginPath();g.moveTo(L,T);g.lineTo(L,h-B);g.lineTo(w-R,h-B);g.stroke();
+  if(o.xl){g.textAlign='right';g.fillText(o.xl,w-R,h-B-5);}
+  return{g,X,Y,w,h,L,R,T,B};
+}
+function line(P,f,x0,x1,col,lw=2,n=500,dash){const{g,X,Y}=P;g.strokeStyle=col;g.lineWidth=lw;g.setLineDash(dash||[]);g.beginPath();for(let i=0;i<=n;i++){const x=x0+(x1-x0)*i/n,y=f(x);if(!isFinite(y))continue;i?g.lineTo(X(x),Y(y)):g.moveTo(X(x),Y(y));}g.stroke();g.setLineDash([]);}
+function stick(P,x,y,col){const{g,X,Y}=P;g.strokeStyle=col;g.fillStyle=col;g.lineWidth=3;g.beginPath();g.moveTo(X(x),Y(0));g.lineTo(X(x),Y(y));g.stroke();g.beginPath();g.arc(X(x),Y(y),4.5,0,7);g.fill();}
+function label(P,x,y,t,col,align='left'){P.g.fillStyle=col;P.g.textAlign=align;P.g.font='12px "JetBrains Mono",monospace';P.g.fillText(t,P.X(x),P.Y(y));}
+
+/* ---------- quiz helper ---------- */
+const score={};
+function quiz(id,items){
+  const box=document.createElement('div');box.className='quiz';box.innerHTML='<h3>Check yourself</h3>';
+  items.forEach((it,qi)=>{const q=document.createElement('div');q.className='q';q.innerHTML=`<p>${qi+1}. ${it.q}</p>`;const opts=document.createElement('div');opts.className='opts';const fb=document.createElement('div');fb.className='fb';
+    it.o.forEach((t,oi)=>{const b=document.createElement('button');b.type='button';b.innerHTML=t;b.onclick=()=>{
+      opts.querySelectorAll('button').forEach(x=>x.classList.remove('right','wrong'));
+      const ok=oi===it.a;b.classList.add(ok?'right':'wrong');fb.className='fb '+(ok?'right':'wrong');
+      fb.innerHTML=(ok?'Right. ':'Not quite. ')+it.e;score[id+qi]=ok;updScore();};opts.appendChild(b);});
+    q.append(opts,fb);box.appendChild(q);});
+  return box;
+}
+function updScore(){const v=Object.values(score);const el=$('#score');if(el)el.textContent=`${v.filter(Boolean).length} correct so far`;}
+
+const NOTES={
+'5.1':`
+<p>Any periodic x(t) has a Fourier Series, x(t) = Σc<sub>n</sub>e<sup>jnω<sub>0</sub>t</sup>, c<sub>n</sub> = (1/T<sub>0</sub>)∫x(t)e<sup>−jnω<sub>0</sub>t</sup>dt. The <b>Fourier Transform</b> extends this to <b>non-periodic</b> signals, as the limit T<sub>0</sub> → ∞.</p>
+<p>Take a non-periodic x(t) (e.g. rect(t)) and build its periodic extension z<sub>T<sub>0</sub></sub>(t) = Σ<sub>n</sub>x(t − nT<sub>0</sub>). As T<sub>0</sub> grows, z looks more and more like x over a longer range of t. For rect(t): c<sub>n</sub> = (1/T<sub>0</sub>)sinc(nω<sub>0</sub>/2π): the lines get closer (spacing ω<sub>0</sub> = 2π/T<sub>0</sub> → 0) and shorter, tracing the same envelope.</p>
+<div class="eq">c<sub>n</sub>T<sub>0</sub> = ∫<sub>−T<sub>0</sub>/2</sub><sup>T<sub>0</sub>/2</sup> z<sub>T<sub>0</sub></sub>(t)e<sup>−jnω<sub>0</sub>t</sup>dt &nbsp;→&nbsp; ∫<sub>−∞</sub><sup>∞</sup>x(t)e<sup>−jωt</sup>dt ≜ X(jω) &nbsp;&nbsp;(T<sub>0</sub>→∞, nω<sub>0</sub>→ω)<br>z<sub>T<sub>0</sub></sub>(t) = (ω<sub>0</sub>/2π)Σ<sub>n</sub>(c<sub>n</sub>T<sub>0</sub>)e<sup>jnω<sub>0</sub>t</sup> &nbsp;→&nbsp; (1/2π)∫X(jω)e<sup>jωt</sup>dω</div>
+<p><b>Definition 5.1 (Fourier Transform).</b></p>
+<div class="eq">X(jω) = ∫<sub>−∞</sub><sup>∞</sup> x(t)e<sup>−jωt</sup>dt &nbsp;&nbsp;(5.3) &nbsp;&nbsp;&nbsp;&nbsp; x(t) = (1/2π)∫<sub>−∞</sub><sup>∞</sup> X(jω)e<sup>jωt</sup>dω &nbsp;&nbsp;(5.4)</div>
+<p>Notation: x(t) ↔ X(jω), X = F{x}, x = F<sup>−1</sup>{X}.</p>
+<ul><li><b>Sufficient conditions:</b> x(t) absolutely integrable (∫|x|dt &lt; ∞) and piecewise continuous. If moreover x is differentiable at all points of continuity with left/right derivatives everywhere, X is continuous and the inverse exists for all t.</li></ul>
+<h4>5.1.1 Interpretation</h4>
+<p>x(t) ≈ lim Σ<sub>n</sub> X(jnΔω)e<sup>j(nΔω)t</sup>(Δω/2π): every signal is a weighted sum of complex exponentials. Unlike periodic signals (only harmonics nω<sub>0</sub>), we now need <b>all</b> frequencies ω ∈ (−∞, ∞).</p>
+<p><b>The 1/2π factor:</b> in natural frequency f = ω/2π the pair becomes symmetric: X̂(jf) = ∫x(t)e<sup>−j2πft</sup>dt, x(t) = ∫X̂(jf)e<sup>j2πft</sup>df (5.5–5.6).</p>`,
+
+'5.2':`
+<p><b>1. Rectangular pulse</b> (5.7): rect(t/τ) ↔ τ·sinc(ωτ/2π) = τ·Sa(ωτ/2).</p>
+<div class="eq">X(jω) = ∫<sub>−τ/2</sub><sup>τ/2</sup>e<sup>−jωt</sup>dt = (e<sup>−jωτ/2</sup> − e<sup>jωτ/2</sup>)/(−jω) = 2sin(ωτ/2)/ω = τ·sin(ωτ/2)/(ωτ/2)</div>
+<p>Zeros at ω = 2πk/τ (k ≠ 0). A narrower pulse (smaller τ) gives a <b>wider</b> transform: the uncertainty principle.</p>
+<p><b>2.</b> e<sup>−αt</sup>u(t) ↔ 1/(α + jω), Re{α} &gt; 0 (5.8): ∫<sub>0</sub><sup>∞</sup>e<sup>−(α+jω)t</sup>dt = 1/(α + jω).</p>
+<p><b>3.</b> e<sup>−α|t|</sup> ↔ 2α/(α² + ω²), Re{α} &gt; 0 (5.9): split at 0: 1/(α − jω) + 1/(α + jω) = 2α/(α² + ω²).</p>
+<p><b>4.</b> te<sup>−αt</sup>u(t) ↔ 1/(α + jω)² (5.10): differentiate 1/(α+jω) = ∫e<sup>−αt</sup>u(t)e<sup>−jωt</sup>dt with respect to α. In general t<sup>n−1</sup>e<sup>−αt</sup>u(t) ↔ (n−1)!/(α + jω)<sup>n</sup>.</p>
+<p><b>5.</b> δ(t) ↔ 1 (5.11): ∫δ(t)e<sup>−jωt</sup>dt = 1. (Also the limit of (1/ε)rect(t/ε) ↔ sinc(ωε/2π) → 1.)</p>
+<p>Signals that are not absolutely integrable (δ, u, e<sup>jω<sub>0</sub>t</sup>, cos ω<sub>0</sub>t) are handled formally as limits:</p>
+<p><b>6.</b> 1 ↔ 2πδ(ω) (5.12): e<sup>−ε|t|</sup> ↔ 2ε/(ε² + ω²), which for ε → 0 is even, has area 2π, is 0 for ω ≠ 0 and ∞ at 0. A constant has only DC.</p>
+<p><b>7.</b> e<sup>jω<sub>0</sub>t</sup> ↔ 2πδ(ω − ω<sub>0</sub>) (5.13).</p>
+<p><b>8.</b> cos ω<sub>0</sub>t ↔ π[δ(ω−ω<sub>0</sub>) + δ(ω+ω<sub>0</sub>)]; sin ω<sub>0</sub>t ↔ (π/j)[δ(ω−ω<sub>0</sub>) − δ(ω+ω<sub>0</sub>)] (5.14), using cos = (e<sup>jω<sub>0</sub>t</sup> + e<sup>−jω<sub>0</sub>t</sup>)/2 and linearity.</p>
+<p><b>9.</b> Periodic x = Σc<sub>n</sub>e<sup>jnω<sub>0</sub>t</sup> ↔ 2πΣc<sub>n</sub>δ(ω − nω<sub>0</sub>) (5.15): impulses at the harmonics.</p>
+<p><b>10.</b> sgn(t) ↔ 2/(jω) (5.16). <b>11.</b> u(t) = ½sgn(t) + ½ ↔ πδ(ω) + 1/(jω) (5.17).</p>
+<table class="nt"><tr><th>x(t)</th><th>X(jω)</th></tr>
+<tr><td>e<sup>−αt</sup>u(t)</td><td>1/(α+jω)</td></tr><tr><td>e<sup>−α|t|</sup></td><td>2α/(α²+ω²)</td></tr><tr><td>rect(t/τ)</td><td>τ sin(ωτ/2)/(ωτ/2)</td></tr>
+<tr><td>t<sup>n−1</sup>e<sup>−αt</sup>u(t)</td><td>(n−1)!/(α+jω)<sup>n</sup></td></tr><tr><td>e<sup>−αt²</sup></td><td>√(π/α)e<sup>−ω²/4α</sup></td></tr>
+<tr><td>1</td><td>2πδ(ω)</td></tr><tr><td>δ(t)</td><td>1</td></tr><tr><td>e<sup>±jω<sub>0</sub>t</sup></td><td>2πδ(ω ∓ ω<sub>0</sub>)</td></tr>
+<tr><td>cos ω<sub>0</sub>t</td><td>π[δ(ω−ω<sub>0</sub>)+δ(ω+ω<sub>0</sub>)]</td></tr><tr><td>sin ω<sub>0</sub>t</td><td>(π/j)[δ(ω−ω<sub>0</sub>)−δ(ω+ω<sub>0</sub>)]</td></tr>
+<tr><td>Σc<sub>n</sub>e<sup>jnω<sub>0</sub>t</sup></td><td>2πΣc<sub>n</sub>δ(ω−nω<sub>0</sub>)</td></tr><tr><td>sgn(t)</td><td>2/(jω)</td></tr><tr><td>u(t)</td><td>πδ(ω) + 1/(jω)</td></tr></table>
+<p>(Table 5.1)</p>`,
+
+'5.3a':`
+<h4>5.3.1 Linearity</h4>
+<div class="eq">αx<sub>1</sub>(t) + βx<sub>2</sub>(t) ↔ αX<sub>1</sub>(jω) + βX<sub>2</sub>(jω) &nbsp;&nbsp;(5.18)</div>
+<p><b>Example 5.1:</b> 2e<sup>−t</sup>u(t) + 3e<sup>−2t</sup>u(t) ↔ 2/(1+jω) + 3/(2+jω).</p>
+<h4>5.3.2 Symmetry</h4>
+<div class="eq">x*(t) ↔ X*(−jω) &nbsp;&nbsp;(5.19) &nbsp;&nbsp;&nbsp; x real ⇒ X*(−jω) = X(jω): &nbsp;|X(−jω)| = |X(jω)| (even), ∠X(−jω) = −∠X(jω) (odd)</div>
+<h4>5.3.3 Duality</h4>
+<div class="eq">x(t) ↔ X(jω) &nbsp;⇒&nbsp; X(jt) ↔ 2π·x(−ω) &nbsp;&nbsp;(5.20)</div>
+<p>Proof: 2πx(−ω) = ∫X(jz)e<sup>−jzω</sup>dz = ∫X(jt)e<sup>−jωt</sup>dt. <b>Example 5.2:</b> e<sup>−α|t|</sup> ↔ 2α/(α²+ω²) ⇒ 2α/(α²+t²) ↔ 2πe<sup>−α|ω|</sup>. <b>Example 5.3:</b> 1 ↔ 2πδ(ω) ⇒ δ(t) ↔ 1. <b>Example 5.4:</b> rect(t/τ) ↔ τ sinc(ωτ/2π) ⇒ τ sinc(τt/2π) ↔ 2π rect(ω/τ); with ω<sub>0</sub> = τ/2: sinc(ω<sub>0</sub>t/π) ↔ (π/ω<sub>0</sub>)rect(ω/2ω<sub>0</sub>).</p>
+<h4>5.3.4 Time shifting</h4>
+<div class="eq">x(t − t<sub>0</sub>) ↔ X(jω)e<sup>−jωt<sub>0</sub></sup> &nbsp;&nbsp;(5.21)</div>
+<p>Proof: substitute η = t − t<sub>0</sub>. <b>Example 5.5:</b> e<sup>−α(t−t<sub>0</sub>)</sup>u(t−t<sub>0</sub>) ↔ e<sup>−jωt<sub>0</sub></sup>/(α+jω). Also δ(t − t<sub>0</sub>) ↔ e<sup>−jωt<sub>0</sub></sup>. A shift changes only the <b>phase</b>; |X| stays the same.</p>
+<h4>5.3.5 Time scaling</h4>
+<div class="eq">x(αt) ↔ (1/|α|)X(jω/α) &nbsp;&nbsp;(5.22)</div>
+<p>Proof (α &gt; 0): substitute η = αt. <b>Expansion in time ⇔ compression in frequency</b>, and vice versa (uncertainty principle).</p>`,
+
+'5.3b':`
+<h4>5.3.6 Frequency shifting and modulation</h4>
+<div class="eq">x(t)e<sup>jω<sub>0</sub>t</sup> ↔ X(j(ω − ω<sub>0</sub>)) &nbsp;&nbsp;(5.23)</div>
+<p>Proof: ∫x(t)e<sup>jω<sub>0</sub>t</sup>e<sup>−jωt</sup>dt = ∫x(t)e<sup>−j(ω−ω<sub>0</sub>)t</sup>dt. Using cos ω<sub>0</sub>t = ½(e<sup>jω<sub>0</sub>t</sup> + e<sup>−jω<sub>0</sub>t</sup>) and sin ω<sub>0</sub>t = (1/2j)(e<sup>jω<sub>0</sub>t</sup> − e<sup>−jω<sub>0</sub>t</sup>):</p>
+<div class="eq">x(t)cos ω<sub>0</sub>t ↔ ½[X(j(ω−ω<sub>0</sub>)) + X(j(ω+ω<sub>0</sub>))] &nbsp;&nbsp;(5.24)<br>x(t)sin ω<sub>0</sub>t ↔ (1/2j)[X(j(ω−ω<sub>0</sub>)) − X(j(ω+ω<sub>0</sub>))] &nbsp;&nbsp;(5.25)</div>
+<p><b>Example 5.6.</b> An audio signal with |X| up to 5 kHz, multiplied by cos(ω<sub>0</sub>t) with ω<sub>0</sub> = 2π×10⁶ (1 MHz): the spectrum is shifted forward by +ω<sub>0</sub> and backward by −ω<sub>0</sub>, each copy at half height, occupying 10⁶ ± 5×10³ Hz. This is the basis of AM radio (audio amp → ×cos ω<sub>0</sub>t → power amp): Y(jω) = ½X(j(ω−ω<sub>0</sub>)) + ½X(j(ω+ω<sub>0</sub>)).</p>`,
+
+'5.3c':`
+<h4>5.3.7 Multiplication by t<sup>n</sup></h4>
+<div class="eq">t<sup>n</sup>x(t) ↔ j<sup>n</sup> d<sup>n</sup>X(jω)/dω<sup>n</sup> &nbsp;&nbsp;(5.26) &nbsp;&nbsp;(if t<sup>n</sup>x is absolutely integrable)</div>
+<p><b>Example 5.7:</b> e<sup>−αt</sup>u ↔ 1/(α+jω) ⇒ te<sup>−αt</sup>u ↔ j·d/dω[1/(α+jω)] = j·(−j)/(α+jω)² = 1/(α+jω)².</p>
+<h4>5.3.8 Differentiation</h4>
+<div class="eq">dx(t)/dt ↔ jωX(jω) &nbsp;&nbsp;(5.27) &nbsp;&nbsp;&nbsp; dⁿx/dtⁿ ↔ (jω)ⁿX(jω) &nbsp;&nbsp;(5.28)</div>
+<p>Proof: integrate by parts; x(t)e<sup>−jωt</sup> → 0 at ±∞ because x is absolutely integrable. Differentiation <b>accentuates high frequencies</b>.</p>
+<h4>5.3.9 Time-domain convolution</h4>
+<div class="eq">x<sub>1</sub>(t) * x<sub>2</sub>(t) ↔ X<sub>1</sub>(jω)X<sub>2</sub>(jω) &nbsp;&nbsp;(5.29)</div>
+<p>Proof: interchange the order of integration and substitute η = t − τ. Applied to an LTI system with impulse response h(t) ↔ H(jω):</p>
+<div class="eq">y(t) = x(t) * h(t) &nbsp;⇒&nbsp; Y(jω) = X(jω)H(jω) &nbsp;&nbsp;(5.30)</div>
+<p>As expected: x is made of components X(jω)e<sup>jωt</sup>, each comes out of the LTI system as [H(jω)X(jω)]e<sup>jωt</sup>, so Y = HX. <b>Convolution in time is multiplication in frequency.</b></p>`,
+
+'5.3d':`
+<h4>5.3.10 Frequency-domain convolution</h4>
+<div class="eq">x(t)y(t) ↔ (1/2π)·X(jω) * Y(jω) &nbsp;&nbsp;(5.31)</div>
+<p>Proof: write y via its inverse transform, interchange integrals: (1/2π)∫Y(jη)X(j(ω−η))dη.</p>
+<p><b>Example 5.8 (effect of windowing).</b> If we only observe x(t) over a window (−T/2, T/2): y(t) = x(t)·rect(t/T) ⇒ Y = (1/2π)X * W. In general, convolution tends to <b>spread</b> the spectrum.</p>
+<p><b>Example 5.9.</b> x = cos ω<sub>0</sub>t ↔ π[δ(ω−ω<sub>0</sub>) + δ(ω+ω<sub>0</sub>)], w = rect(t/T) ↔ T sinc(ωT/2π):</p>
+<div class="eq">Y(jω) = (1/2π)X * W = (T/2)sinc[(ω−ω<sub>0</sub>)T/2π] + (T/2)sinc[(ω+ω<sub>0</sub>)T/2π]</div>
+<p>Each impulse becomes a sinc centered at ±ω<sub>0</sub> with first zeros at ω<sub>0</sub> ± 2π/T. (The notes write πT; with the 1/2π of (5.31) the height is T/2.) "A windowed cos is not a delta": the longer the window T, the narrower the sinc.</p>`,
+
+'5.3e':`
+<h4>5.3.11 Parseval's theorem for the Fourier Transform</h4>
+<div class="eq">E ≡ ∫<sub>−∞</sub><sup>∞</sup>|x(t)|²dt = (1/2π)∫<sub>−∞</sub><sup>∞</sup>|X(jω)|²dω &nbsp;&nbsp;(5.32)</div>
+<p>Proof: E = ∫x(t)x*(t)dt, write x* through the inverse transform, interchange integrals to get (1/2π)∫X*(jω)X(jω)dω. Compare Ch 4: P<sub>av</sub> = Σ|c<sub>n</sub>|² (power of a periodic signal = sum of the powers of its harmonics).</p>
+<p><b>Definition 5.2 (Energy spectral density).</b> (1/2π)|X(jω)|² is the ESD: the distribution of energy across frequency (like mass = ∫ density over volume).</p>
+<p><b>Example 5.10.</b> x = e<sup>−2t</sup>u(t) ↔ 1/(2 + jω). One-sided ESD (positive ω, doubled): (1/π)|X|² = (1/π)/(4 + ω²).</p>
+<div class="eq">E = ∫<sub>0</sub><sup>∞</sup>(1/π)dω/(4+ω²) &nbsp;(ω = 2 tan θ) = ∫<sub>0</sub><sup>π/2</sup>(1/2π)dθ = 1/4<br>E<sub>[0,2]</sub> = ∫<sub>0</sub><sup>2</sup>(1/π)dω/(4+ω²) = ∫<sub>0</sub><sup>π/4</sup>(1/2π)dθ = 1/8</div>
+<p>Half of the energy is in ω ∈ [0, 2] rad/s. Check in time: ∫<sub>0</sub><sup>∞</sup>e<sup>−4t</sup>dt = 1/4 ✓.</p>
+<table class="nt"><tr><th>Property</th><th>Pair</th></tr>
+<tr><td>Linearity</td><td>αx<sub>1</sub>+βx<sub>2</sub> ↔ αX<sub>1</sub>+βX<sub>2</sub></td></tr><tr><td>Real x</td><td>X(−jω) = X*(jω)</td></tr><tr><td>Duality</td><td>X(jt) ↔ 2πx(−ω)</td></tr><tr><td>Shift</td><td>x(t−t<sub>0</sub>) ↔ e<sup>−jωt<sub>0</sub></sup>X</td></tr><tr><td>Scale</td><td>x(αt) ↔ (1/|α|)X(jω/α)</td></tr><tr><td>Freq. shift</td><td>xe<sup>jω<sub>0</sub>t</sup> ↔ X(j(ω−ω<sub>0</sub>))</td></tr><tr><td>Modulation</td><td>x cos ω<sub>0</sub>t ↔ ½[X(ω−ω<sub>0</sub>)+X(ω+ω<sub>0</sub>)]</td></tr></table><p>(Table 5.2)</p>`
+};
+const MORE={
+'5.1':`
+<h4>Worked example — from c<sub>n</sub> to X</h4>
+<p>Pulse rect(t) repeated every T<sub>0</sub>: c<sub>n</sub> = (1/T<sub>0</sub>)sinc(nω<sub>0</sub>/2π). Then c<sub>n</sub>T<sub>0</sub> = sinc(nω<sub>0</sub>/2π) = X(jnω<sub>0</sub>), samples of X(jω) = sinc(ω/2π). So <b>Fourier series coefficients are samples of the Fourier transform of one period, divided by T<sub>0</sub>.</b></p>
+<div class="trap"><b>Exam traps.</b> (1) The inverse transform has 1/2π, the forward doesn't. (2) X(0) = ∫x dt (area); x(0) = (1/2π)∫X dω. Use these to sanity-check answers.</div>`,
+'5.2':`
+<h4>Worked example — sample midterm P3</h4>
+<p>X(jω) = u(ω+1) − u(ω−1) (= 1 for |ω| &lt; 1). By the sinc pair, x(t) = sin(t)/(πt). At t = π: sin π/π² = <b>0</b>.</p>
+<h4>Worked example — rect width</h4>
+<p>rect(t/2) ↔ 2 sinc(ω/π): height 2 (= area), first zeros at ±π. rect(t/0.5) ↔ 0.5 sinc(ω/4π): zeros at ±4π. Narrow in time ⇔ wide in frequency.</p>
+<div class="trap"><b>Exam traps.</b> (1) cos ω<sub>0</sub>t ↔ π[δ+δ], not [δ+δ]. (2) Course sinc(x) = sin(πx)/(πx). (3) e<sup>−αt</sup>u needs Re α &gt; 0. (4) 1 ↔ 2πδ(ω), with the 2π.</div>`,
+'5.3a':`
+<h4>Worked example — combining shift and t<sup>n</sup></h4>
+<p>y(t) = te<sup>−2(t−1)</sup>u(t−1). Write t = (t−1) + 1: y = (t−1)e<sup>−2(t−1)</sup>u(t−1) + e<sup>−2(t−1)</sup>u(t−1) ⇒ Y = e<sup>−jω</sup>[1/(2+jω)² + 1/(2+jω)].</p>
+<h4>Worked example — scaling</h4>
+<p>x(t) = e<sup>−|t|</sup> ↔ 2/(1+ω²). Then x(3t) = e<sup>−3|t|</sup> ↔ (1/3)·2/(1+(ω/3)²) = 6/(9+ω²) ✓ (matches the e<sup>−α|t|</sup> pair with α = 3).</p>
+<div class="trap"><b>Exam traps.</b> (1) x(2t) is <b>wider</b> in frequency and ×½ in height. (2) For x(αt − b), factor as x(α(t − b/α)): shift by b/α. (3) Shifts never change |X|.</div>`,
+'5.3b':`
+<h4>Worked example — band after modulation</h4>
+<p>X(jω) = 2 − |ω| for |ω| &lt; 2 (sample midterm P6). y = x(t)cos(2πt): Y = ½[X(j(ω−2π)) + X(j(ω+2π))]: triangles of height 1 centered at ±2π, each from 2π−2 to 2π+2. Absolute bandwidth of y = 4 (twice that of x).</p>
+<h4>Worked example — modulating with sin</h4>
+<p>x(t)sin(ω<sub>0</sub>t) ↔ (1/2j)[X(ω−ω<sub>0</sub>) − X(ω+ω<sub>0</sub>)]: same magnitudes as with cos (½ each), but the copies get phases −90° and +90°.</p>
+<div class="trap"><b>Exam traps.</b> (1) Half height. (2) Two copies, at +ω<sub>0</sub> and −ω<sub>0</sub>. (3) Bandwidth doubles.</div>`,
+'5.3c':`
+<h4>Worked example — LTI output without convolving</h4>
+<p>h = e<sup>−t</sup>u, x = e<sup>−2t</sup>u: Y = 1/((1+jω)(2+jω)) = 1/(1+jω) − 1/(2+jω) (partial fractions) ⇒ y = (e<sup>−t</sup> − e<sup>−2t</sup>)u(t).</p>
+<h4>Worked example — sample midterm P4</h4>
+<p>x = e<sup>−t</sup>u, y = 2e<sup>−4t</sup>u ⇒ H = Y/X = 2(1+jω)/(4+jω). |H(j1)| = 2√2/√17 = √(8/17) ≈ 0.686 (answer (c)).</p>
+<h4>Worked example — sample midterm P7</h4>
+<p>H = 1/(jω+6), y = e<sup>−5t</sup>u − e<sup>−6t</sup>u ⇒ Y = 1/((5+jω)(6+jω)) ⇒ X = Y/H = 1/(5+jω) ⇒ x = e<sup>−5t</sup>u(t).</p>
+<div class="trap"><b>Exam traps.</b> (1) Y = HX: divide to find H or X. (2) Partial fractions: 1/((a+jω)(b+jω)) = [1/(a+jω) − 1/(b+jω)]/(b−a). (3) t·x ↔ j dX/dω (note the j).</div>`,
+'5.3d':`
+<h4>Worked example — window length</h4>
+<p>cos(10t) observed for T = 2 s: lobes centered at ±10 with first zeros at 10 ± π. For T = 20 s: zeros at 10 ± π/10, ten times narrower. Separating two tones 0.5 rad/s apart needs a window long enough that 2π/T &lt; 0.5, i.e. T &gt; 12.6 s.</p>
+<div class="trap"><b>Exam traps.</b> (1) Product in time ↔ convolution in frequency with a 1/2π. (2) Convolving with δ(ω − ω<sub>0</sub>) just shifts. (3) Longer window ⇒ narrower spectral lobes.</div>`,
+'5.3e':`
+<h4>Worked example — energy in a band</h4>
+<p>x = e<sup>−at</sup>u, X = 1/(a+jω): E = 1/(2a). Energy in |ω| &lt; W: (1/2π)∫<sub>−W</sub><sup>W</sup>dω/(a²+ω²) = (1/πa)tan<sup>−1</sup>(W/a). Fraction = (2/π)tan<sup>−1</sup>(W/a): W = a gives ½, W = 3a gives 0.795.</p>
+<h4>Worked example — triangle (sample P6d)</h4>
+<p>X = 2 − |ω|: fraction in |ω| ≤ 1 = ∫<sub>0</sub><sup>1</sup>(2−ω)²/∫<sub>0</sub><sup>2</sup>(2−ω)² = (7/3)/(8/3) = 7/8.</p>
+<div class="trap"><b>Exam traps.</b> (1) Energy uses |X|², with 1/2π. (2) Positive-side only: multiply by 2 (or use 1/π). (3) Fractions don't need the 1/2π (it cancels).</div>`
+};
+
+/* ---------- lessons ---------- */
+const L=[];
+function segs(el,id,cb){el.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{el.querySelectorAll('#'+id+' button').forEach(x=>x.setAttribute('aria-pressed',x===b));cb(b.dataset.v);});}
+const sincc=x=>Math.abs(x)<1e-9?1:Math.sin(Math.PI*x)/(Math.PI*x);
+function band(P,f,x0,x1,col,alpha=0.22){const{g,X,Y}=P;g.fillStyle=col;g.globalAlpha=alpha;g.beginPath();g.moveTo(X(x0),Y(0));for(let i=0;i<=400;i++){const x=x0+(x1-x0)*i/400;g.lineTo(X(x),Y(f(x)));}g.lineTo(X(x1),Y(0));g.closePath();g.fill();g.globalAlpha=1;}
+
+/* 5.1 */
+L.push({t:'Introduction to Fourier Transform and Derivation',s:'5.1',k:'5.1',build(el){
+  el.innerHTML=`<div class="rule">X(jω) = ∫ x(t) e^(−jωt) dt        x(t) = (1/2π) ∫ X(jω) e^(jωt) dω</div>
+  <p class="try"><b>Try:</b> rect(t) repeated every T₀. Increase T₀: the lines cₙT₀ (dots) crowd together at spacing ω₀ = 2π/T₀ and fill in the continuous curve X(jω) = sinc(ω/2π). That limit is the Fourier transform.</p>
+  <div class="controls"><div class="ctl"><label for="T51">Period of extension T₀</label><input id="T51" type="range" min="1.5" max="20" step="0.5" value="3"><output id="T51o"></output></div></div>
+  <div class="scope"><figure><figcaption>Periodic extension z(t) of rect(t)</figcaption><canvas id="a51"></canvas></figure>
+  <figure><figcaption>cₙ·T₀ at ω = nω₀ (dots) vs X(jω) = sinc(ω/2π) (line)</figcaption><canvas id="b51"></canvas></figure></div>
+  <div class="readout" id="r51"></div>`;
+  function draw(){
+    const T=+$('#T51').value,w0=2*Math.PI/T;$('#T51o').textContent=T;
+    const P=axes($('#a51'),[-10,10],[-0.2,1.3],{xt:[[-10,'-10'],[0,'0'],[10,'10']],yt:[[0,'0'],[1,'1']],xl:'t'});
+    line(P,t=>{const u=((t%T)+T)%T;return (u<0.5||u>T-0.5)?1:0;},-10,10,css('--accent'),2,2000);
+    const Q=axes($('#b51'),[-30,30],[-0.3,1.1],{xt:[[-4*Math.PI,'-4π'],[-2*Math.PI,'-2π'],[0,'0'],[2*Math.PI,'2π'],[4*Math.PI,'4π']],yt:[[0,'0'],[1,'1']],xl:'ω'});
+    line(Q,w=>sincc(w/(2*Math.PI)),-30,30,css('--drop'),2);
+    for(let n=-Math.floor(30/w0);n<=Math.floor(30/w0);n++){const w=n*w0;Q.g.fillStyle=css('--accent');Q.g.beginPath();Q.g.arc(Q.X(w),Q.Y(sincc(w/(2*Math.PI))),3.5,0,7);Q.g.fill();}
+    $('#r51').innerHTML=`ω₀ = 2π/T₀ = ${fmt(w0,3)} rad/s  (line spacing)\ncₙ = (1/T₀)·sinc(nω₀/2π)  ⇒  cₙT₀ = sinc(nω₀/2π) = X(jnω₀)\nas T₀ → ∞ the samples fill in the whole curve X(jω)`;
+  }
+  $('#T51').oninput=draw;draw();this.draw=draw;
+  el.appendChild(quiz('f51',[
+   {q:'Which formula has the 1/2π?',o:['the forward transform X(jω)','the inverse transform x(t)','both','neither'],a:1,e:'x(t) = (1/2π)∫X(jω)e^(jωt)dω.'},
+   {q:'X(0) equals…',o:['x(0)','the area ∫x(t)dt','the energy','0'],a:1,e:'Set ω = 0: X(0) = ∫x(t)·1 dt.'},
+   {q:'A sufficient condition for X(jω) to exist is that x(t) is…',o:['periodic','absolutely integrable (and piecewise continuous)','real','even'],a:1,e:'∫|x|dt &lt; ∞ plus piecewise continuity (notes 5.1).'}]));
+}});
+
+/* 5.2 */
+L.push({t:'Examples of Fourier Transform Pairs',s:'5.2',k:'5.2',build(el){
+  el.innerHTML=`<div class="rule">rect(t/τ) ↔ τ sinc(ωτ/2π)    e^(−αt)u(t) ↔ 1/(α+jω)    e^(−α|t|) ↔ 2α/(α²+ω²)    t e^(−αt)u(t) ↔ 1/(α+jω)²</div>
+  <p class="try"><b>Try:</b> pick a pair and change its width. Make the pulse narrower in time and watch |X| get wider (uncertainty principle).</p>
+  <div class="controls"><div class="ctl"><label>Pair</label><div class="seg" id="s52"><button aria-pressed="true" data-v="rect">rect(t/τ)</button><button data-v="exp">e^(−αt)u(t)</button><button data-v="abs">e^(−α|t|)</button><button data-v="texp">t e^(−αt)u(t)</button></div></div>
+  <div class="ctl"><label for="p52" id="p52l">τ</label><input id="p52" type="range" min="0.2" max="4" step="0.1" value="1"><output id="p52o"></output></div></div>
+  <div class="scope"><figure><figcaption>x(t)</figcaption><canvas id="a52"></canvas></figure><figure><figcaption>|X(jω)|</figcaption><canvas id="b52"></canvas></figure></div>
+  <div class="readout" id="r52"></div>`;
+  let k='rect';segs(el,'s52',v=>{k=v;$('#p52l').textContent=v==='rect'?'τ':'α';draw();});
+  function draw(){
+    const p=+$('#p52').value;$('#p52o').textContent=p;
+    const D={rect:{x:t=>Math.abs(t)<p/2?1:0,X:w=>p*Math.abs(sincc(w*p/(2*Math.PI))),s:`rect(t/${p}) ↔ ${p}·sinc(ω·${p}/2π); first zeros at ω = ±2π/${p} = ±${fmt(2*Math.PI/p,2)}`},
+      exp:{x:t=>t>=0?Math.exp(-p*t):0,X:w=>1/Math.hypot(p,w),s:`e^(−${p}t)u(t) ↔ 1/(${p} + jω); |X| = 1/√(${fmt(p*p,2)} + ω²), 3 dB at ω = ${p}`},
+      abs:{x:t=>Math.exp(-p*Math.abs(t)),X:w=>2*p/(p*p+w*w),s:`e^(−${p}|t|) ↔ ${fmt(2*p,2)}/(${fmt(p*p,2)} + ω²)  (real and even)`},
+      texp:{x:t=>t>=0?t*Math.exp(-p*t):0,X:w=>1/(p*p+w*w),s:`t·e^(−${p}t)u(t) ↔ 1/(${p} + jω)²; |X| = 1/(${fmt(p*p,2)} + ω²)`}}[k];
+    const xm=Math.max(...Array.from({length:400},(_,i)=>D.x(-6+12*i/400))),Xm=D.X(0);
+    const P=axes($('#a52'),[-6,6],[0,xm*1.2],{xt:[[-6,'-6'],[0,'0'],[6,'6']],yt:[[0,'0'],[xm,fmt(xm,2)]],xl:'t'});line(P,D.x,-6,6,css('--accent'),2.5,1200);
+    const Q=axes($('#b52'),[-20,20],[0,Xm*1.15],{xt:[[-20,'-20'],[0,'0'],[20,'20']],yt:[[0,'0'],[Xm,fmt(Xm,2)]],xl:'ω'});line(Q,D.X,-20,20,css('--accent'),2.5,1200);
+    $('#r52').innerHTML=D.s+`\nX(0) = area of x(t) = ${fmt(Xm,3)}`;
+  }
+  $('#p52').oninput=draw;draw();this.draw=draw;
+  el.appendChild(quiz('f52',[
+   {q:'F{cos ω₀t} =',o:['δ(ω−ω₀) + δ(ω+ω₀)','π[δ(ω−ω₀) + δ(ω+ω₀)]','2πδ(ω−ω₀)','(π/j)[δ(ω−ω₀) − δ(ω+ω₀)]'],a:1,e:'cos = ½(e^(jω₀t) + e^(−jω₀t)), and each exponential gives 2πδ.'},
+   {q:'Sample midterm P3: X = u(ω+1) − u(ω−1). What is x(π)?',o:['−1','0','1/π','1'],a:1,e:'x(t) = sin(t)/(πt), and sin π = 0.'},
+   {q:'Making rect(t/τ) narrower (smaller τ) makes its spectrum…',o:['narrower','wider and lower','unchanged','zero'],a:1,e:'Zeros at 2π/τ move out; height τ drops: uncertainty principle.'},
+   {q:'F{u(t)} =',o:['1/(jω)','πδ(ω) + 1/(jω)','2πδ(ω)','1'],a:1,e:'u = ½sgn + ½ ⇒ ½·2/(jω) + ½·2πδ(ω).'}]));
+}});
+
+/* 5.3.1–5.3.5 */
+L.push({t:'Linearity, Symmetry, Duality, Shift, Scaling',s:'5.3.1–5.3.5',k:'5.3a',build(el){
+  el.innerHTML=`<div class="rule">x(t − t₀) ↔ e^(−jωt₀)X(jω)      x(αt) ↔ (1/|α|)X(jω/α)      X(jt) ↔ 2πx(−ω)</div>
+  <p class="try"><b>Try:</b> shift x(t) = rect(t) by t₀: |X| does not move, only the phase tilts (slope −t₀). Then change α: squeezing time stretches the spectrum.</p>
+  <div class="controls">
+    <div class="ctl"><label for="t053">Shift t₀</label><input id="t053" type="range" min="-2" max="2" step="0.1" value="0.5"><output id="t053o"></output></div>
+    <div class="ctl"><label for="a53">Scale α (x(αt))</label><input id="a53" type="range" min="0.3" max="3" step="0.1" value="1"><output id="a53o"></output></div>
+  </div>
+  <div class="scope"><figure><figcaption>x(t) = rect(t) grey, y(t) = rect(α(t − t₀)) blue</figcaption><canvas id="a53c"></canvas></figure>
+  <figure><figcaption>|Y(jω)| (blue) vs |X(jω)| (grey)</figcaption><canvas id="b53"></canvas></figure>
+  <figure><figcaption>Phase ∠Y(jω) (wrapped to ±180°)</figcaption><canvas id="c53"></canvas></figure></div>
+  <div class="readout" id="r53"></div>`;
+  function draw(){
+    const t0=+$('#t053').value,a=+$('#a53').value;$('#t053o').textContent=t0;$('#a053')||0;$('#a53o').textContent=a;
+    const P=axes($('#a53c'),[-3,3],[-0.2,1.3],{xt:[[-3,'-3'],[0,'0'],[3,'3']],yt:[[0,'0'],[1,'1']],xl:'t'});
+    line(P,t=>Math.abs(t)<0.5?1:0,-3,3,css('--drop'),2,900);line(P,t=>Math.abs(a*(t-t0))<0.5?1:0,-3,3,css('--accent'),2.5,900);
+    const Xm=w=>Math.abs(sincc(w/(2*Math.PI))),Ym=w=>Math.abs(sincc(w/(2*Math.PI*a)))/a;
+    const top=Math.max(1,1/a)*1.1;
+    const Q=axes($('#b53'),[-30,30],[0,top],{xt:[[-30,'-30'],[0,'0'],[30,'30']],yt:[[0,'0'],[1,'1']],xl:'ω'});line(Q,Xm,-30,30,css('--drop'),2,900);line(Q,Ym,-30,30,css('--accent'),2.5,900);
+    const R=axes($('#c53'),[-30,30],[-190,190],{xt:[[-30,'-30'],[0,'0'],[30,'30']],yt:[[-180,'-180'],[0,'0'],[180,'180']],xl:'ω'});
+    const ph=w=>{const s=sincc(w/(2*Math.PI*a));let p=-w*t0+(s<0?Math.PI:0);p=((p+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;return p*180/Math.PI;};
+    const{g,X,Y}=R;g.fillStyle=css('--accent');for(let i=0;i<=900;i++){const w=-30+60*i/900;g.fillRect(X(w)-1,Y(ph(w))-1,2,2);}
+    $('#r53').innerHTML=`y(t) = rect(${a}(t − ${t0}))  ↔  (1/${a})·sinc(ω/(2π·${a}))·e^(−jω·${t0})\n|Y| first zeros at ±2π·${a} = ±${fmt(2*Math.PI*a,2)}   (scaling stretches |X| by ${a}, height ×1/${a})\nphase gets an extra −ω·${t0}: a straight line with slope −${t0}   (shifting never changes |Y|)`;
+  }
+  ['#t053','#a53'].forEach(s=>$(s).oninput=draw);draw();this.draw=draw;
+  el.appendChild(quiz('f53',[
+   {q:'x(t − 3) has transform…',o:['X(jω)e^(−j3ω)','X(jω)e^(j3ω)','X(j(ω−3))','3X(jω)'],a:0,e:'Time shift ⇒ multiply by e^(−jωt₀).'},
+   {q:'x(2t) has transform…',o:['2X(j2ω)','½X(jω/2)','X(jω/2)','½X(j2ω)'],a:1,e:'(1/|α|)X(jω/α) with α = 2: wider spectrum, half height.'},
+   {q:'Duality: e^(−|t|) ↔ 2/(1+ω²). So 2/(1+t²) ↔',o:['e^(−|ω|)','2πe^(−|ω|)','πe^(−|ω|)','2/(1+ω²)'],a:1,e:'X(jt) ↔ 2πx(−ω) = 2πe^(−|ω|).'},
+   {q:'For a real signal, |X(jω)| is…',o:['odd','even','always real','periodic'],a:1,e:'X(−jω) = X*(jω) ⇒ |X| even, ∠X odd.'}]));
+}});
+
+/* 5.3.6 */
+L.push({t:'Frequency Shifting and Modulation',s:'5.3.6',k:'5.3b',build(el){
+  el.innerHTML=`<div class="rule">x(t)e^(jω₀t) ↔ X(j(ω−ω₀))      x(t)cos ω₀t ↔ ½[X(j(ω−ω₀)) + X(j(ω+ω₀))]</div>
+  <p class="try"><b>Try:</b> the triangle spectrum of sample midterm P6 times cos(ω₀t). Move ω₀: two half-height copies slide to ±ω₀ and the occupied band doubles.</p>
+  <div class="controls"><div class="ctl"><label for="w56">ω₀</label><input id="w56" type="range" min="0" max="12" step="0.2" value="6.28"><output id="w56o"></output></div>
+  <div class="ctl"><label>Multiply by</label><div class="seg" id="s56"><button aria-pressed="true" data-v="cos">cos ω₀t</button><button data-v="exp">e^(jω₀t)</button></div></div></div>
+  <div class="scope"><figure><figcaption>|X(jω)| = 2 − |ω| (grey) and |Y(jω)| after multiplying (blue)</figcaption><canvas id="a56" style="height:250px"></canvas></figure></div>
+  <div class="readout" id="r56"></div>`;
+  let m='cos';segs(el,'s56',v=>{m=v;draw();});
+  function draw(){
+    const w0=+$('#w56').value;$('#w56o').textContent=w0;const X=w=>Math.max(0,2-Math.abs(w));
+    const Y=m==='cos'?w=>0.5*X(w-w0)+0.5*X(w+w0):w=>X(w-w0);
+    const P=axes($('#a56'),[-16,16],[0,2.3],{xt:[[-w0,'−ω₀'],[0,'0'],[w0,'ω₀']].filter((v,i,a)=>w0>0.5||i===1),yt:[[0,'0'],[1,'1'],[2,'2']],xl:'ω'});
+    band(P,X,-2,2,css('--drop'),.4);line(P,Y,-16,16,css('--accent'),2.5,1600);band(P,Y,-16,16,css('--accent'),.18);
+    $('#r56').innerHTML=m==='cos'?`copies at ±${w0}, height ½·2 = 1\neach copy spans ${fmt(w0-2,2)} to ${fmt(w0+2,2)}  ⇒  absolute bandwidth 4 (was 2)`:`one copy shifted to +${w0}, full height 2 (e^(jω₀t) shifts without splitting)`;
+  }
+  $('#w56').oninput=draw;draw();this.draw=draw;
+  el.appendChild(quiz('f56',[
+   {q:'Sample P6(b): X = 2 − |ω| (|ω| &lt; 2). The absolute bandwidth of x(t)cos(2πt) is…',o:['2','4','2π','π'],a:1,e:'Copies centered at ±2π span 2π ± 2: width 4.'},
+   {q:'Audio up to 5 kHz times cos(2π·10⁶t). The spectrum is centered at…',o:['5 kHz','±1 MHz','2 MHz','0'],a:1,e:'Shifted forward and backward by ω₀ (Example 5.6).'},
+   {q:'Each copy after multiplying by cos ω₀t has height…',o:['the same','½ of the original','2×','π×'],a:1,e:'cos = ½e^(+) + ½e^(−).'}]));
+}});
+
+/* 5.3.7–5.3.9 */
+L.push({t:'Multiplication by tⁿ, Differentiation, Convolution',s:'5.3.7–5.3.9',k:'5.3c',build(el){
+  el.innerHTML=`<div class="rule">tⁿx(t) ↔ jⁿ dⁿX/dωⁿ      dx/dt ↔ jωX(jω)      x * h ↔ X·H   ⇒   LTI: Y = H·X</div>
+  <p class="try"><b>Try:</b> x(t) = e^(−at)u(t) into an LTI system with h(t) = e^(−bt)u(t). Instead of convolving, multiply the spectra and use partial fractions. Set a = b to see the t e^(−at) case.</p>
+  <div class="controls">
+    <div class="ctl"><label for="a59">input decay a</label><input id="a59" type="range" min="0.5" max="5" step="0.5" value="2"><output id="a59o"></output></div>
+    <div class="ctl"><label for="b59">system decay b</label><input id="b59" type="range" min="0.5" max="5" step="0.5" value="1"><output id="b59o"></output></div>
+  </div>
+  <div class="scope"><figure><figcaption>x(t) grey, h(t) dashed, y = x * h blue</figcaption><canvas id="a59c"></canvas></figure><figure><figcaption>|X|, |H| and |Y| = |X|·|H|</figcaption><canvas id="b59c"></canvas></figure></div>
+  <div class="readout" id="r59"></div>`;
+  function draw(){
+    const a=+$('#a59').value,b=+$('#b59').value;$('#a59o').textContent=a;$('#b59o').textContent=b;
+    const y=t=>t<0?0:(Math.abs(a-b)<1e-9?t*Math.exp(-a*t):(Math.exp(-a*t)-Math.exp(-b*t))/(b-a));
+    const P=axes($('#a59c'),[-0.5,6],[0,1.1],{xt:[[0,'0'],[2,'2'],[4,'4'],[6,'6']],yt:[[0,'0'],[1,'1']],xl:'t'});
+    line(P,t=>t<0?0:Math.exp(-a*t),-0.5,6,css('--drop'),2,600);line(P,t=>t<0?0:Math.exp(-b*t),-0.5,6,css('--muted'),1.5,600,[5,4]);line(P,y,-0.5,6,css('--accent'),2.5,600);
+    const Q=axes($('#b59c'),[0,10],[0,Math.max(1/a,1/b)*1.1],{xt:[[0,'0'],[5,'5'],[10,'10']],yt:[[0,'0']],xl:'ω'});
+    line(Q,w=>1/Math.hypot(a,w),0,10,css('--drop'),2);line(Q,w=>1/Math.hypot(b,w),0,10,css('--muted'),1.5,500,[5,4]);line(Q,w=>1/(Math.hypot(a,w)*Math.hypot(b,w)),0,10,css('--accent'),2.5);
+    $('#r59').innerHTML=Math.abs(a-b)<1e-9?`Y = 1/(${a}+jω)²  ⇒  y(t) = t·e^(−${a}t)u(t)   (multiplication-by-t pair)`:`Y = 1/((${a}+jω)(${b}+jω)) = (1/${fmt(b-a,2)})·[1/(${a}+jω) − 1/(${b}+jω)]\n⇒ y(t) = (e^(−${a}t) − e^(−${b}t))/${fmt(b-a,2)} · u(t)`;
+  }
+  ['#a59','#b59'].forEach(s=>$(s).oninput=draw);draw();this.draw=draw;
+  el.appendChild(quiz('f59',[
+   {q:'Sample P7: H = 1/(jω+6), y = e^(−5t)u − e^(−6t)u. Then x(t) =',o:['e^(−6t)u(t)','e^(−5t)u(t)','2e^(−6t)u(t)','e^(−t)u(t)'],a:1,e:'Y = 1/((5+jω)(6+jω)); X = Y/H = 1/(5+jω).'},
+   {q:'Sample P4: x = e^(−t)u, y = 2e^(−4t)u. |H(j1)| =',o:['√3','√(8/17)','2','1/2'],a:1,e:'H = 2(1+jω)/(4+jω); |H(j1)| = 2√2/√17 = √(8/17).'},
+   {q:'d/dt in time corresponds to…',o:['÷jω','×jω','×t','shift'],a:1,e:'dx/dt ↔ jωX: high frequencies are boosted.'}]));
+}});
+
+/* 5.3.10 */
+L.push({t:'Frequency-Domain Convolution (Windowing)',s:'5.3.10',k:'5.3d',build(el){
+  el.innerHTML=`<div class="rule">x(t)·w(t) ↔ (1/2π) X * W      cos ω₀t · rect(t/T) ↔ (T/2)sinc((ω−ω₀)T/2π) + (T/2)sinc((ω+ω₀)T/2π)</div>
+  <p class="try"><b>Try:</b> observe cos(ω₀t) only for T seconds (Example 5.9). Short windows smear each impulse into a wide sinc; long windows give a narrow peak.</p>
+  <div class="controls"><div class="ctl"><label for="T510">Window length T</label><input id="T510" type="range" min="0.5" max="20" step="0.5" value="3"><output id="T510o"></output></div>
+  <div class="ctl"><label for="w510">ω₀</label><input id="w510" type="range" min="3" max="15" step="0.5" value="10"><output id="w510o"></output></div></div>
+  <div class="scope"><figure><figcaption>windowed cosine in time</figcaption><canvas id="a510"></canvas></figure><figure><figcaption>|Y(jω)| (positive side)</figcaption><canvas id="b510"></canvas></figure></div>
+  <div class="readout" id="r510"></div>`;
+  function draw(){
+    const T=+$('#T510').value,w0=+$('#w510').value;$('#T510o').textContent=T+' s';$('#w510o').textContent=w0;
+    const P=axes($('#a510'),[-11,11],[-1.2,1.2],{xt:[[-10,'-10'],[0,'0'],[10,'10']],yt:[[0,'0'],[1,'1']],xl:'t'});
+    line(P,t=>Math.abs(t)<T/2?Math.cos(w0*t):0,-11,11,css('--accent'),1.5,2200);
+    const Y=w=>Math.abs((T/2)*sincc((w-w0)*T/(2*Math.PI))+(T/2)*sincc((w+w0)*T/(2*Math.PI)));
+    const Q=axes($('#b510'),[0,2*w0],[0,T/2*1.15],{xt:[[0,'0'],[w0,'ω₀'],[2*w0,String(2*w0)]],yt:[[0,'0'],[T/2,'T/2']],xl:'ω'});line(Q,Y,0,2*w0,css('--accent'),2.5,1200);
+    $('#r510').innerHTML=`peak height T/2 = ${fmt(T/2,2)} at ω = ${w0}\nfirst zeros at ω₀ ± 2π/T = ${fmt(w0-2*Math.PI/T,2)} and ${fmt(w0+2*Math.PI/T,2)}  (lobe half-width ${fmt(2*Math.PI/T,3)})`;
+  }
+  ['#T510','#w510'].forEach(s=>$(s).oninput=draw);draw();this.draw=draw;
+  el.appendChild(quiz('f510',[
+   {q:'Multiplying two signals in time corresponds in frequency to…',o:['multiplying the spectra','convolving them, with a 1/2π','adding them','nothing'],a:1,e:'x·y ↔ (1/2π)X * Y.'},
+   {q:'A longer observation window T makes the spectral peak of a windowed cosine…',o:['wider','narrower','disappear','move'],a:1,e:'Lobe half-width 2π/T shrinks as T grows.'}]));
+}});
+
+/* 5.3.11 */
+L.push({t:"Parseval's Theorem for Fourier Transform",s:'5.3.11',k:'5.3e',build(el){
+  el.innerHTML=`<div class="rule">E = ∫|x(t)|²dt = (1/2π)∫|X(jω)|²dω      ESD = (1/2π)|X(jω)|²</div>
+  <p class="try"><b>Try:</b> x(t) = e^(−at)u(t) (Example 5.10 is a = 2). Move the band edge W and read what fraction of the energy lies in |ω| &lt; W. At W = a it is exactly half.</p>
+  <div class="controls"><div class="ctl"><label for="a511">a</label><input id="a511" type="range" min="0.5" max="5" step="0.5" value="2"><output id="a511o"></output></div>
+  <div class="ctl"><label for="W511">Band edge W</label><input id="W511" type="range" min="0" max="15" step="0.25" value="2"><output id="W511o"></output></div></div>
+  <div class="scope"><figure><figcaption>|X(jω)|² = 1/(a² + ω²); shaded = energy inside |ω| &lt; W</figcaption><canvas id="a511c" style="height:250px"></canvas></figure></div>
+  <div class="readout" id="r511"></div>`;
+  function draw(){
+    const a=+$('#a511').value,W=+$('#W511').value;$('#a511o').textContent=a;$('#W511o').textContent=W;
+    const f=w=>1/(a*a+w*w);const P=axes($('#a511c'),[-15,15],[0,1.1/(a*a)],{xt:[[-W,'−W'],[0,'0'],[W,'W']],yt:[[0,'0'],[1/(a*a),'1/a²']],xl:'ω'});
+    band(P,f,-W,W,css('--keep'),.3);line(P,f,-15,15,css('--accent'),2.5,1200);
+    const E=1/(2*a),Eb=Math.atan(W/a)/(Math.PI*a);
+    $('#r511').innerHTML=`total E = ∫₀^∞ e^(−2at)dt = 1/(2a) = ${fmt(E,4)}\nE in |ω| &lt; W = (1/πa)·tan⁻¹(W/a) = ${fmt(Eb,4)}\nfraction = (2/π)·tan⁻¹(W/a) = ${fmt(100*Eb/E,1)}%`;
+  }
+  ['#a511','#W511'].forEach(s=>$(s).oninput=draw);draw();this.draw=draw;
+  el.appendChild(quiz('f511',[
+   {q:'Energy of e^(−2t)u(t)?',o:['1/2','1/4','1/8','2'],a:1,e:'∫₀^∞ e^(−4t)dt = 1/4 (Example 5.10).'},
+   {q:'In Example 5.10, what fraction of the energy is in ω ∈ [0, 2]?',o:['1/4','1/2','3/4','all'],a:1,e:'E[0,2] = 1/8 of the total 1/4.'},
+   {q:'Parseval for the Fourier transform includes…',o:['no constant','a 1/2π on the frequency side','a 2π on the time side','1/T₀'],a:1,e:'∫|x|²dt = (1/2π)∫|X|²dω.'}]));
+}});
+
+/* ---------- shell ---------- */
+let cur=0;
+function show(i){
+  cur=i;const nav=$('#nav');nav.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-current',k===i));
+  const m=$('#main');m.innerHTML='';const sec=document.createElement('section');sec.className='lesson';
+  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div><details class="notes" open><summary>From the notes · §${L[i].s}</summary>${NOTES[L[i].k]||''}${MORE[L[i].k]?'<h4 class="more">Going deeper: derivations, worked examples, exam traps</h4>'+MORE[L[i].k]:''}</details>`;
+  const body=document.createElement('div');body.style.display='flex';body.style.flexDirection='column';body.style.gap='16px';sec.appendChild(body);m.appendChild(sec);
+  L[i].build.call(L[i],body);
+  const nr=document.createElement('div');nr.className='navrow';
+  nr.innerHTML=`<button type="button" id="prev" ${i?'':'hidden'}>← ${i?L[i-1].t:''}</button><span class="score" id="score"></span><button type="button" class="next" id="next" ${i<L.length-1?'':'hidden'}>${i<L.length-1?L[i+1].t+' →':''}</button>`;
+  sec.appendChild(nr);$('#prev').onclick=()=>go(i-1);$('#next').onclick=()=>go(i+1);updScore();
+  try{localStorage.setItem('ch5lab',i)}catch(e){}
+}
+function go(i){location.hash='lesson'+(i+1);}
+function fromHash(){const m=/lesson(\d+)/.exec(location.hash);let i=m?+m[1]-1:0;if(!m){try{i=+(localStorage.getItem('ch5lab')||0)}catch(e){}}show(Math.min(Math.max(i,0),L.length-1));window.scrollTo({top:0});}
+L.forEach((l,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML=`<span class="n">${l.s}</span><span>${l.t}</span>`;b.onclick=()=>go(i);$('#nav').appendChild(b);});
+window.addEventListener('hashchange',fromHash);
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>L[cur].draw&&L[cur].draw(),120);});
+const mq=matchMedia('(prefers-color-scheme: dark)');mq.addEventListener&&mq.addEventListener('change',()=>L[cur].draw&&L[cur].draw());
+new MutationObserver(()=>L[cur].draw&&L[cur].draw()).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+document.fonts&&document.fonts.ready.then(()=>L[cur].draw&&L[cur].draw());
+fromHash();
+</script>
+</body></html>

@@ -20,15 +20,15 @@
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
-.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:24px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:270px minmax(0,1fr);gap:24px}
 @media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr)}}
 header{grid-column:1/-1}
 h1{font-family:var(--f-display);font-size:28px;margin:0;text-wrap:balance}
 header p{margin:4px 0 0;color:var(--muted);max-width:68ch}
 nav{display:flex;flex-direction:column;gap:6px;align-self:start;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
 @media (max-width:820px){nav{position:static;flex-direction:row;overflow-x:auto;padding-bottom:4px}}
-nav button{all:unset;cursor:pointer;display:flex;gap:10px;align-items:baseline;padding:9px 12px;border-radius:8px;border:1px solid transparent;color:var(--muted);white-space:nowrap}
-nav button .n{font-family:var(--f-mono);font-size:12px}
+nav button{all:unset;cursor:pointer;display:flex;gap:10px;align-items:baseline;padding:8px 12px;border-radius:8px;border:1px solid transparent;color:var(--muted)}
+nav button .n{font-family:var(--f-mono);font-size:12px;min-width:34px}
 nav button:hover{color:var(--ink);background:var(--panel)}
 nav button[aria-current="true"]{background:var(--panel);border-color:var(--line);color:var(--ink);font-weight:600}
 nav button:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -70,6 +70,15 @@ canvas{width:100%;height:220px;display:block}
 .navrow button{all:unset;cursor:pointer;padding:8px 14px;border-radius:8px;border:1px solid var(--line);font-weight:500}
 .navrow button.next{background:var(--accent);color:var(--panel);border-color:var(--accent)}
 .score{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.notes{border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:4px 18px 14px}
+.notes summary{cursor:pointer;font-family:var(--f-display);font-weight:700;padding:10px 0;color:var(--accent)}
+.notes p,.notes li{max-width:74ch}.notes h4{font-family:var(--f-display);font-size:16px;margin:14px 0 4px}
+.eq{font-family:var(--f-mono);font-size:14px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;padding:8px 12px;margin:8px 0;overflow-x:auto;line-height:1.7}
+.nt{border-collapse:collapse;margin:8px 0;font-size:14px;display:block;overflow-x:auto}.nt td,.nt th{border:1px solid var(--line);padding:4px 10px;text-align:left}.nt th{background:var(--accent-soft)}
+.trap{background:color-mix(in srgb,var(--warn) 10%,transparent);border-left:3px solid var(--warn);border-radius:6px;padding:8px 12px;margin:10px 0;font-size:14px}
+h4.more{border-top:1px dashed var(--line);padding-top:12px;margin-top:18px;color:var(--accent)}
+.nx{background:var(--accent-soft);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:14px}
+code{font-family:var(--f-mono);font-size:13px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .home{display:inline-block;margin-bottom:8px;color:var(--accent);text-decoration:none;font-weight:500}.home:hover{text-decoration:underline}
 :root{color-scheme:light}body{margin:0}
@@ -79,9 +88,9 @@ canvas{width:100%;height:220px;display:block}
 <div class="wrap">
 <header><a class="home" href="../">← All chapters</a>
   <h1>Chapter 7 AM Lab</h1>
-  <p>Six short lessons on amplitude modulation, one per idea in your notes. Read the idea, move the sliders, sketch the spectrum in your head, then answer the check questions. Companion to the Chapter 6 Filter Lab.</p>
+  <p>Follows your typeset notes section by section (7.1 → 7.6). Each page opens with the detailed notes for that section, including Example 7.1 and the sample-midterm AM problems, then a live plot you control and check questions.</p>
 </header>
-<nav id="nav" aria-label="Lessons"></nav>
+<nav id="nav" aria-label="Sections"></nav>
 <main id="main"></main>
 </div>
 <script>
@@ -120,6 +129,145 @@ function quiz(id,items){
 }
 function updScore(){const v=Object.values(score);const el=$('#score');if(el)el.textContent=`${v.filter(Boolean).length} correct so far`;}
 
+const NOTES={
+'7.1':`
+<p>The process of <b>modulation</b> involves three signals:</p>
+<ul><li><b>x(t)</b>: a slowly-varying <b>information</b> signal (e.g. audio)</li>
+<li><b>c(t)</b>: a high-frequency <b>carrier</b> signal (e.g. cos ω<sub>c</sub>t)</li>
+<li><b>y(t)</b>: the <b>modulated</b> signal, which depends on x(t) and c(t)</li></ul>
+<p>Modulation is the process by which some attribute of the carrier (amplitude, frequency, …) is modified in accordance with the information signal. In <b>amplitude modulation</b> the carrier's amplitude follows x(t).</p>
+<h4>Why modulate? Three reasons</h4>
+<ol>
+<li><b>Antenna size.</b> For a circuit to act as an antenna, its dimension must be of the order of the wavelength:
+<div class="eq">c = λf &nbsp;⇒&nbsp; λ = c/f</div>
+Audio at f = 5 kHz: λ = 3×10⁸ / 5×10³ = <b>60 km</b>. Modulated onto a 1 MHz carrier: λ = 3×10⁸ / 10⁶ = <b>300 m</b>.</li>
+<li><b>Propagation.</b> The medium may favor some frequencies over others; e.g. the atmosphere is very lossy over certain ranges.</li>
+<li><b>Multiple access.</b> Many signals can be transmitted at the same time over a band of frequencies (e.g. AM radio), each on its own carrier. The receiver filters out the others and processes the desired one.</li>
+</ol>`,
+
+'7.2':`
+<p><b>Suppressed-Carrier AM (SC-AM)</b>: multiply the information signal by the carrier.</p>
+<div class="eq">y(t) = A·x(t)·cos(ω<sub>c</sub>t) &nbsp;&nbsp;&nbsp;(7.1)</div>
+<p>x(t) is the information signal, cos(ω<sub>c</sub>t) the carrier. The <b>envelope</b> of y(t) is |x(t)|, not x(t). So we <b>cannot</b> recover x(t) from y(t) with an envelope detector: wherever x(t) is negative its sign is lost.</p>
+<h4>7.2.1 Frequency representation</h4>
+<p>By the modulation property (Ch 5.3.6):</p>
+<div class="eq">Y(jω) = F{y(t)} = (A/2)[X(j(ω − ω<sub>c</sub>)) + X(j(ω + ω<sub>c</sub>))] &nbsp;&nbsp;&nbsp;(7.2)</div>
+<p>The message spectrum (width ω<sub>B</sub> around 0) is copied to ±ω<sub>c</sub> at <b>half height</b> (times A). Each copy runs from ω<sub>c</sub> − ω<sub>B</sub> to ω<sub>c</sub> + ω<sub>B</sub>, so the bandwidth of y(t) is <b>2ω<sub>B</sub></b>: SC-AM needs twice the bandwidth of the original signal.</p>
+<p>The part above ω<sub>c</sub> is the <b>upper sideband</b>; the part below is the <b>lower sideband</b>.</p>`,
+
+'7.3':`
+<p>Transmitter sends y(t) = A x(t) cos(ω<sub>c</sub>t). The receiver gets</p>
+<div class="eq">r(t) = αy(t) + noise = αA·x(t)cos(ω<sub>c</sub>t) + noise = B·x(t)cos(ω<sub>c</sub>t) + noise, &nbsp;&nbsp;B = αA</div>
+<p><b>Demodulation:</b> multiply r(t) by cos(ω<sub>c</sub>t) to get z(t), then a <b>lowpass filter</b> with cutoff ω<sub>B</sub> gives x̂(t).</p>
+<h4>7.3.1 Frequency-domain analysis</h4>
+<div class="eq">Z(jω) = F{r(t)cos ω<sub>c</sub>t} = ½R(j(ω − ω<sub>c</sub>)) + ½R(j(ω + ω<sub>c</sub>))</div>
+<p>The copies at ±ω<sub>c</sub> are shifted by ±ω<sub>c</sub> again: one half of each lands at 0 (together they rebuild the message) and the other halves land at ±2ω<sub>c</sub>. The LPF keeps the part at 0, so X̂(jω) ≈ X(jω): the information signal is recovered.</p>
+<h4>7.3.2 Time-domain analysis</h4>
+<div class="eq">z(t) = Bx(t)cos²(ω<sub>c</sub>t) = Bx(t)·(1 + cos 2ω<sub>c</sub>t)/2 = (B/2)x(t) + (B/2)x(t)cos(2ω<sub>c</sub>t)</div>
+<p>The first term is centered at 0; the second is modulated by cos 2ω<sub>c</sub>t, so it sits at ±2ω<sub>c</sub>. After the LPF:</p>
+<div class="eq">x̂(t) = (B/2)·x(t) &nbsp;&nbsp;&nbsp;(7.3)</div>
+<p>Factors like B/2 don't matter much: demodulation is usually followed by amplification. In reality x̂(t) = (B/2)x(t) + noise (the noise inside the LPF band). The antenna signal is ~µV, so the first receiver stage is a high-gain (G ≈ 10⁶) amplifier, really a high-gain <b>bandpass</b> filter around ω<sub>c</sub>.</p>
+<h4>The hidden assumption: synchronization</h4>
+<p>The analysis assumed the receiver's cos(ω<sub>c</sub>t) is perfectly in phase with the transmitter's. With a phase difference φ:</p>
+<div class="eq">z(t) = Bx(t)cos(ω<sub>c</sub>t)cos(ω<sub>c</sub>t + φ) = (B/2)x(t)cos φ + (B/2)x(t)cos(2ω<sub>c</sub>t + φ)<br>⇒ x̂(t) = (B/2)(cos φ)·x(t) + noise (noise not affected by φ) &nbsp;&nbsp;&nbsp;(7.4)</div>
+<ul><li>As φ drifts toward π/2, the signal part becomes much smaller than the noise.</li>
+<li>No amount of amplification helps: it amplifies signal <b>and</b> noise.</li></ul>
+<p><b>Two solutions:</b> (1) a <b>synchronization</b> circuit that tracks the incoming carrier phase ("coherent" reception, expensive in the broadcast-AM era), or (2) change the modulation so reception can be done <b>non-coherently</b> ⇒ Large-Carrier AM.</p>`,
+
+'7.4':`
+<p><b>Large-Carrier AM (LC-AM):</b> add a constant M before multiplying by the carrier.</p>
+<div class="eq">y(t) = A[M + x(t)]cos(ω<sub>c</sub>t), &nbsp;&nbsp; M ≥ max|x(t)| so that M + x(t) ≥ 0</div>
+<h4>7.4.1 Frequency representation</h4>
+<div class="eq">y(t) = AM cos(ω<sub>c</sub>t) + Ax(t)cos(ω<sub>c</sub>t)<br>Y(jω) = AMπ[δ(ω − ω<sub>c</sub>) + δ(ω + ω<sub>c</sub>)] + (A/2)[X(j(ω − ω<sub>c</sub>)) + X(j(ω + ω<sub>c</sub>))]</div>
+<p>Same sidebands as SC-AM, plus <b>carrier impulses</b> at ±ω<sub>c</sub>. Bandwidth is still 2ω<sub>B</sub>.</p>
+<h4>7.4.2 Demodulation</h4>
+<p>Since M + x(t) ≥ 0, |M + x(t)| = M + x(t): the <b>envelope of y(t) is exactly M + x(t)</b>. So reception is a single <b>envelope detector</b> (ED) followed by a <b>DC block</b> that removes M:</p>
+<div class="eq">r(t) → G (amplifier) → ED → M + x(t) → DC block → x(t)</div>
+<p>We assume x(t) has no DC component of its own (voice has no audible content below some frequency). Result: no need for an expensive coherent receiver.</p>
+<h4>Drawback: wasted power</h4>
+<p>The AM cos(ω<sub>c</sub>t) part carries no information, yet it costs power:</p>
+<div class="eq">P<sub>c</sub> = (AM)²/2 &nbsp;&nbsp; P<sub>I</sub> = A²P<sub>x</sub>/2 &nbsp;&nbsp; P<sub>tot</sub> = (A²/2)(M² + P<sub>x</sub>) = (A²P<sub>x</sub>/2)(1 + M²/P<sub>x</sub>)</div>
+<p>(1 + M²/P<sub>x</sub>) is the factor of "wasted" power, there only to make M + x(t) ≥ 0. LC-AM is less power-efficient than SC-AM: that is the price of simple demodulation.</p>`,
+
+'7.5':`
+<p><b>Commercial AM radio:</b> 107 stations, carriers 540, 550, …, 1600 kHz (10 kHz spacing). Each station lowpass-filters its audio to 5 kHz and uses LC-AM: y<sub>i</sub>(t) = [M + x<sub>i</sub>(t)]cos(ω<sub>i</sub>t). The receiver gets r(t) = Σα<sub>i</sub>y<sub>i</sub>(t) + noise. How does it select one station?</p>
+<p><b>Method 1:</b> a tunable high-gain (µV → V, G ≈ 10⁶) bandpass filter/amplifier centered at f<sub>c</sub>, then ED, DC block, audio amp. A measure of its cost is the quality factor</p>
+<div class="eq">Q ≈ f<sub>c</sub>/BW ≈ (540 to 1600 kHz)/10 kHz ≈ 54 to 160 ≈ 100</div>
+<p>Building a high-Q amplifier that is also <b>tunable</b> is expensive.</p>
+<h4>7.5.1 Solution: the superheterodyne receiver</h4>
+<p>Build a <b>single</b> high-Q amplifier at a <b>constant</b> intermediate frequency f<sub>IF</sub> = 455 kHz (a standard off-the-shelf part), and use the modulation property to move the desired station there:</p>
+<div class="eq">r(t) → × cos(ω<sub>LO</sub>t) (local oscillator) → IF amplifier → ED → DC block → audio amp → speaker</div>
+<p>Mixing shifts the spectrum by ±ω<sub>LO</sub>. Choose ω<sub>LO</sub> so the station lands on the IF:</p>
+<div class="eq">ω<sub>c</sub> − ω<sub>LO</sub> = ω<sub>IF</sub> ⇒ ω<sub>LO</sub> = ω<sub>c</sub> − ω<sub>IF</sub> &nbsp;&nbsp;(7.5) &nbsp;&nbsp; (if ω<sub>IF</sub> &gt; ω<sub>c</sub>: ω<sub>LO</sub> = ω<sub>IF</sub> − ω<sub>c</sub> (7.6))<br>in general ω<sub>LO</sub> = |ω<sub>c</sub> − ω<sub>IF</sub>| &nbsp;&nbsp;(7.7) &nbsp;&nbsp; alternatively ω<sub>LO</sub> = ω<sub>c</sub> + ω<sub>IF</sub></div>
+<h4>The image problem</h4>
+<p>Another station at ω<sub>I</sub> may also land on the IF and interfere. With ω<sub>LO</sub> = ω<sub>c</sub> − ω<sub>IF</sub>: ω<sub>I</sub> − ω<sub>LO</sub> = −ω<sub>IF</sub> ⇒ ω<sub>I</sub> = ω<sub>c</sub> − 2ω<sub>IF</sub> (7.8–7.9); in general ω<sub>I</sub> = |ω<sub>c</sub> − 2ω<sub>IF</sub>| (7.11). With ω<sub>LO</sub> = ω<sub>c</sub> + ω<sub>IF</sub>: ω<sub>I</sub> = ω<sub>c</sub> + 2ω<sub>IF</sub>.</p>
+<table class="nt"><tr><th>ω<sub>LO</sub></th><th>image ω<sub>I</sub></th></tr><tr><td>|ω<sub>c</sub> − ω<sub>IF</sub>|</td><td>|ω<sub>c</sub> − 2ω<sub>IF</sub>|</td></tr><tr><td>ω<sub>c</sub> + ω<sub>IF</sub></td><td>ω<sub>c</sub> + 2ω<sub>IF</sub></td></tr></table>
+<p><b>Example 7.1.</b> f<sub>IF</sub> = 455 kHz, 2f<sub>IF</sub> = 910 kHz. Low LO: desired 540 … 1440, 1450, … 1600 map to images +370 … 530, 540, … 690. There are no stations at 370–530, but 540–690 are real stations: desired stations in the <b>upper</b> part of the band (1450–1600) have an <b>image</b> problem. With the high LO (ω<sub>LO</sub> = ω<sub>c</sub> + ω<sub>IF</sub>), the lower stations 540–690 get images at 1450–1600 instead.</p>
+<p><b>Solution:</b> filter out the image <b>before</b> mixing with an image-rejection filter: |H| = 1 for |ω − ω<sub>c</sub>| &lt; 2π·5 kHz, 0 for |ω − ω<sub>I</sub>| &lt; 2π·5 kHz, arbitrary elsewhere (7.12). It is tunable but <b>inexpensive</b>: the image is 2f<sub>IF</sub> = 910 kHz away, so Q ≈ (1450 to 1600)/910 ≈ 1.5.</p>`,
+
+'7.6':`
+<p>SC-AM and LC-AM both need 2ω<sub>B</sub> to send one signal of bandwidth ω<sub>B</sub>. For real x(t) the lower and upper sidebands carry the same information, so half the bandwidth is "wasted". Two ways to economize:</p>
+<h4>Method 1: Quadrature AM (QAM)</h4>
+<p>Transmit <b>two</b> information signals on the same band, one on cosine and one on sine (a π/2-shifted LO):</p>
+<div class="eq">y(t) = Ax<sub>1</sub>(t)cos(ω<sub>c</sub>t) + Ax<sub>2</sub>(t)sin(ω<sub>c</sub>t)<br>Y(jω) = (A/2)[X<sub>1</sub>(j(ω−ω<sub>c</sub>)) + X<sub>1</sub>(j(ω+ω<sub>c</sub>))] + (A/2j)[X<sub>2</sub>(j(ω−ω<sub>c</sub>)) − X<sub>2</sub>(j(ω+ω<sub>c</sub>))]</div>
+<p>Both occupy the band around ±ω<sub>c</sub>, so 2ω<sub>B</sub> carries two stations: <b>ω<sub>B</sub> per station</b>.</p>
+<h4>7.6.1 Coherent demodulation</h4>
+<p>Branch 1 multiplies by cos(ω<sub>c</sub>t + φ), branch 2 by sin(ω<sub>c</sub>t + φ), each followed by an LPF at ω<sub>B</sub>:</p>
+<div class="eq">z<sub>1</sub> = (A/2)[x<sub>1</sub>cos φ − x<sub>2</sub>sin φ] + (terms at 2ω<sub>c</sub>, removed)<br>x̂<sub>1</sub>(t) = (A/2)x<sub>1</sub>(t)cos φ − (A/2)x<sub>2</sub>(t)sin φ &nbsp;&nbsp;(7.13)<br>x̂<sub>2</sub>(t) = (A/2)x<sub>1</sub>(t)sin φ + (A/2)x<sub>2</sub>(t)cos φ &nbsp;&nbsp;(7.14)</div>
+<p>With perfect synchronization (φ = 0): x̂<sub>1</sub> = (A/2)x<sub>1</sub>, x̂<sub>2</sub> = (A/2)x<sub>2</sub> (7.15–7.16). Otherwise there is <b>cross-talk</b>:</p>
+<div class="eq">SINR<sub>1</sub> = P<sub>1</sub>cos²φ / (P<sub>2</sub>sin²φ + P<sub>N</sub>)</div>
+<h4>Method 2: Single-Sideband AM (SSB-AM)</h4>
+<p>Filter out one of the sidebands before transmission: modulate x(t) by A cos(ω<sub>c</sub>t), then a BPF keeps only ω<sub>c</sub> to ω<sub>c</sub> + ω<sub>B</sub> (upper sideband). Bandwidth = <b>ω<sub>B</sub></b>.</p>
+<ul><li>A time-domain expression for y(t) needs the Hilbert transform (not covered).</li>
+<li>In practice the filtering is done in IF stages: modulate at ω<sub>IF</sub>, BPF at ω<sub>IF</sub>, then mix with cos(ω<sub>LO</sub>t) and BPF at ω<sub>LO</sub> + ω<sub>IF</sub>.</li>
+<li>At the receiver, demodulation is exactly as in SC-AM: multiply by cos(ω<sub>c</sub>t), LPF with cutoff ω<sub>B</sub>.</li>
+<li>With a phase error: in SC-AM only the signal power drops (SNR deteriorates); in SSB-AM there is an additional effect, the signal is <b>distorted</b>.</li></ul>`
+};
+const MORE={
+'7.1':`
+<h4>Worked example — wavelengths</h4>
+<table class="nt"><tr><th>f</th><th>λ = c/f</th></tr><tr><td>5 kHz audio</td><td>60 km</td></tr><tr><td>540 kHz (AM bottom)</td><td>556 m</td></tr><tr><td>1 MHz</td><td>300 m</td></tr><tr><td>100 MHz (FM)</td><td>3 m</td></tr></table>
+<div class="trap"><b>Exam traps.</b> (1) Use c = 3×10⁸ m/s and f in Hz (not rad/s). (2) The three reasons are antenna size, propagation, multiple access: know all three by name.</div>`,
+'7.2':`
+<h4>Worked example — band occupied</h4>
+<p>x(t) bandlimited to 4 kHz, carrier 100 kHz: copies centered at ±100 kHz, each from 96 to 104 kHz. Bandwidth 8 kHz = 2 × 4 kHz.</p>
+<h4>Worked example — a tone</h4>
+<p>x(t) = cos(ω<sub>m</sub>t), y = A cos(ω<sub>m</sub>t)cos(ω<sub>c</sub>t) = (A/2)cos((ω<sub>c</sub>−ω<sub>m</sub>)t) + (A/2)cos((ω<sub>c</sub>+ω<sub>m</sub>)t). Two tones at ω<sub>c</sub> ± ω<sub>m</sub>, none at ω<sub>c</sub> itself ("suppressed carrier"). Power = 2·(A/2)²/2 = A²/4 = A²P<sub>x</sub>/2.</p>
+<div class="trap"><b>Exam traps.</b> (1) Each copy has height A/2, not A. (2) Bandwidth doubles to 2ω<sub>B</sub>. (3) Envelope = |x(t)|, so an envelope detector fails whenever x(t) goes negative.</div>`,
+'7.3':`
+<h4>Worked example — phase error</h4>
+<p>φ = 60°: x̂ = (B/2)(½)x(t): amplitude halved, power quartered. φ = 90°: cos φ = 0, x̂ = 0 (only noise). φ = 30°: amplitude × 0.866, power × 0.75.</p>
+<h4>Worked example — frequency error</h4>
+<p>If the LO is cos((ω<sub>c</sub> + Δω)t), then z = (B/2)x(t)cos(Δω t) + (terms at 2ω<sub>c</sub>): the output fades in and out at rate Δω. That is a phase φ = Δω·t that keeps changing, another reason coherent receivers need tracking.</p>
+<div class="trap"><b>Exam traps.</b> (1) After mixing, the unwanted copy is at ±2ω<sub>c</sub>; the LPF cutoff must be between ω<sub>B</sub> and 2ω<sub>c</sub> − ω<sub>B</sub>. (2) Use cos A cos B = ½[cos(A−B) + cos(A+B)]. (3) Phase error scales amplitude by cos φ, power by cos²φ.</div>`,
+'7.4':`
+<h4>Worked example — sample midterm Problem 1</h4>
+<p>x(t) = A(1 + cos 2ω<sub>0</sub>t)cos 40ω<sub>0</sub>t has average power 9. Find A. This is LC-AM with M = 1, message cos 2ω<sub>0</sub>t (P<sub>x</sub> = ½):</p>
+<div class="eq">P = (A²/2)(M² + P<sub>x</sub>) = (A²/2)(1 + ½) = 3A²/4 = 9 ⇒ A² = 12 ⇒ A = √12</div>
+<p>Check by expanding: A cos 40ω<sub>0</sub>t + (A/2)cos 38ω<sub>0</sub>t + (A/2)cos 42ω<sub>0</sub>t ⇒ P = A²/2 + A²/8 + A²/8 = 3A²/4 ✓.</p>
+<h4>Worked example — efficiency of a tone</h4>
+<p>x = A<sub>m</sub>cos ω<sub>m</sub>t, modulation index μ = A<sub>m</sub>/M ≤ 1: efficiency P<sub>I</sub>/P<sub>tot</sub> = (A<sub>m</sub>²/2)/(M² + A<sub>m</sub>²/2) = μ²/(2 + μ²). At best (μ = 1) it is only <b>1/3</b>.</p>
+<div class="trap"><b>Exam traps.</b> (1) M ≥ max|x|, not M ≥ average. If M is too small the envelope |M + x| is distorted (over-modulation). (2) Carrier impulses have weight AMπ in Y(jω). (3) The DC block assumes x(t) has no DC.</div>`,
+'7.5':`
+<h4>Worked example — sample midterm Problem 8</h4>
+<p>f<sub>IF</sub> = 200 kHz, desired station 720 kHz (absolute bandwidth 10 kHz), larger LO chosen:</p>
+<div class="eq">f<sub>LO</sub> = 720 + 200 = 920 kHz &nbsp;&nbsp; image f<sub>I</sub> = f<sub>IF</sub> + f<sub>LO</sub> = 720 + 2·200 = 1120 kHz</div>
+<p>An image-rejection BPF centered at 720 kHz must pass 715–725 kHz (so f<sub>abs</sub> ≥ 10) and block the image band 1115–1125 kHz (so its upper edge 720 + f<sub>abs</sub>/2 &lt; 1115 ⇒ f<sub>abs</sub> &lt; 790 kHz).</p>
+<h4>Worked example — standard IF</h4>
+<p>Desired 1520 kHz, f<sub>IF</sub> = 455, low LO: f<sub>LO</sub> = 1065 kHz, image = |1520 − 910| = 610 kHz (inside 540–1600: interferes). High LO: f<sub>LO</sub> = 1975, image = 2430 kHz (outside: fine).</p>
+<div class="trap"><b>Exam traps.</b> (1) Find the LO first, then the image with the <b>same</b> sign: f<sub>I</sub> = f<sub>c</sub> ± 2f<sub>IF</sub>. (2) The image is always 2f<sub>IF</sub> from the desired station. (3) The image filter goes <b>before</b> the mixer; the IF filter after.</div>`,
+'7.6':`
+<h4>Worked example — QAM cross-talk</h4>
+<p>φ = 30°: x̂<sub>1</sub> = (A/2)[(√3/2)x<sub>1</sub> − ½x<sub>2</sub>]. If P<sub>1</sub> = P<sub>2</sub> and P<sub>N</sub> ≈ 0: SINR<sub>1</sub> = cos²30°/sin²30° = 3 (4.8 dB).</p>
+<h4>Comparison</h4>
+<table class="nt"><tr><th></th><th>Bandwidth</th><th>Receiver</th><th>Power</th></tr>
+<tr><td>SC-AM</td><td>2ω<sub>B</sub></td><td>coherent</td><td>efficient</td></tr>
+<tr><td>LC-AM</td><td>2ω<sub>B</sub></td><td>envelope detector</td><td>wastes carrier power</td></tr>
+<tr><td>QAM</td><td>ω<sub>B</sub> per signal</td><td>coherent, 2 branches</td><td>efficient; cross-talk if φ ≠ 0</td></tr>
+<tr><td>SSB</td><td>ω<sub>B</sub></td><td>coherent</td><td>efficient; φ error distorts</td></tr></table>
+<div class="trap"><b>Exam traps.</b> (1) QAM's sine branch uses sin(ω<sub>c</sub>t + φ), from the π/2-shifted LO. (2) sin A cos B = ½[sin(A−B) + sin(A+B)] for the cross terms. (3) SSB halves bandwidth; QAM keeps 2ω<sub>B</sub> but carries two signals.</div>`
+};
+
 /* ---------- lessons ---------- */
 const L=[];
 const msg=t=>0.7*Math.cos(t)+0.4*Math.cos(2.3*t);           // message x(t), goes negative
@@ -128,9 +276,8 @@ function bandShape(P,c,B,h,col,alpha=0.25){const{g,X,Y}=P;g.fillStyle=col;g.glob
 function arrow(P,x,h,col){const{g,X,Y}=P;g.strokeStyle=col;g.fillStyle=col;g.lineWidth=2.5;g.beginPath();g.moveTo(X(x),Y(0));g.lineTo(X(x),Y(h));g.stroke();g.beginPath();g.moveTo(X(x),Y(h)-6);g.lineTo(X(x)-4,Y(h)+2);g.lineTo(X(x)+4,Y(h)+2);g.closePath();g.fill();}
 
 /* 1. Why modulate */
-L.push({t:'Why modulate',s:'7.1',build(el){
-  el.innerHTML=`<p class="idea">Audio sits at low frequencies (up to about 5 kHz). To send it through the air you need an antenna about as long as one wavelength, <b>λ = c/f</b>. At audio frequencies that is kilometres long. <b>Modulation</b> moves the audio up to a high carrier frequency, where the antenna is small, and lets many stations share the air by using different carriers.</p>
-  <div class="rule">λ = c / f,   c = 3×10⁸ m/s     three reasons: antenna size · propagation · multiple access (each station its own carrier)</div>
+L.push({t:'Modulation: What and Why',s:'7.1',k:'7.1',build(el){
+  el.innerHTML=`<div class="rule">λ = c / f,   c = 3×10⁸ m/s     three reasons: antenna size · propagation · multiple access (each station its own carrier)</div>
   <p class="try"><b>Try:</b> slide the frequency from audio up to AM radio and watch the antenna shrink.</p>
   <div class="controls"><div class="ctl"><label for="f1">Frequency f</label><input id="f1" type="range" min="2" max="7" step="0.05" value="3.7"><output id="f1o"></output></div></div>
   <div class="scope"><figure><figcaption>Antenna length needed (log scale) compared with familiar sizes</figcaption><canvas id="a1"></canvas></figure></div>
@@ -150,9 +297,8 @@ L.push({t:'Why modulate',s:'7.1',build(el){
 }});
 
 /* 2. SC-AM */
-L.push({t:'SC-AM: multiply by a carrier',s:'7.2',build(el){
-  el.innerHTML=`<p class="idea">Suppressed-carrier AM just multiplies the message by a fast cosine: <b>y(t) = A·x(t)·cos(ω_c t)</b>. In frequency, the modulation property copies the message spectrum to <b>±ω_c</b> at <b>half height</b>. The width doubles to 2ω_B because each copy has both a lower and an upper sideband.</p>
-  <div class="rule">Y(jω) = (A/2)[X(j(ω−ω_c)) + X(j(ω+ω_c))]      bandwidth = 2ω_B      envelope = |x(t)|, not x(t)</div>
+L.push({t:'Suppressed-Carrier AM (SC-AM)',s:'7.2',k:'7.2',build(el){
+  el.innerHTML=`<div class="rule">Y(jω) = (A/2)[X(j(ω−ω_c)) + X(j(ω+ω_c))]      bandwidth = 2ω_B      envelope = |x(t)|, not x(t)</div>
   <p class="try"><b>Try:</b> raise ω_c and watch the copies slide right. In the time plot, look where x(t) goes negative: the envelope flips up, so an envelope detector would get |x|, not x.</p>
   <div class="controls">
     <div class="ctl"><label for="wc2">Carrier ω_c</label><input id="wc2" type="range" min="8" max="40" step="1" value="20"><output id="wc2o"></output></div>
@@ -179,9 +325,8 @@ L.push({t:'SC-AM: multiply by a carrier',s:'7.2',build(el){
 }});
 
 /* 3. Coherent demodulation */
-L.push({t:'Coherent demodulation',s:'7.3',build(el){
-  el.innerHTML=`<p class="idea">To get x(t) back, multiply the received signal by the <b>same</b> cosine again, then lowpass filter. Multiplying shifts the copies by ±ω_c once more: one lands back at 0 (that is the message) and one lands at ±2ω_c (the LPF throws it away). If the receiver's cosine is off by a phase φ, the message comes out scaled by <b>cos φ</b>.</p>
-  <div class="rule">z = B·x·cos(ω_c t)·cos(ω_c t + φ) = (B/2)x·cos φ + (B/2)x·cos(2ω_c t + φ)   →  LPF  →  x̂ = (B/2)·x(t)·cos φ</div>
+L.push({t:'Demodulation',s:'7.3',k:'7.3',build(el){
+  el.innerHTML=`<div class="rule">z = B·x·cos(ω_c t)·cos(ω_c t + φ) = (B/2)x·cos φ + (B/2)x·cos(2ω_c t + φ)   →  LPF  →  x̂ = (B/2)·x(t)·cos φ</div>
   <p class="try"><b>Try:</b> push φ toward 90°. The recovered message shrinks to nothing while the noise (grey band) stays the same. That is why the receiver must stay in sync.</p>
   <div class="controls"><div class="ctl"><label for="ph3">Phase error φ</label><input id="ph3" type="range" min="0" max="90" step="1" value="0"><output id="ph3o"></output></div></div>
   <div class="scope"><figure><figcaption>Spectrum after multiplying: copy at 0 (kept by the LPF, shaded) and copy at 2ω_c (removed)</figcaption><canvas id="c1"></canvas></figure>
@@ -205,9 +350,8 @@ L.push({t:'Coherent demodulation',s:'7.3',build(el){
 }});
 
 /* 4. LC-AM */
-L.push({t:'LC-AM: add a big carrier',s:'7.4',build(el){
-  el.innerHTML=`<p class="idea">Add a constant M before multiplying: <b>y = A[M + x(t)]cos(ω_c t)</b>. If M is at least as big as the largest negative swing of x, then M + x never goes negative, so the envelope <b>is</b> M + x. A cheap envelope detector plus a DC block gets x back with no sync. The price: power spent on the carrier carries no information.</p>
-  <div class="rule">need M ≥ max|x(t)|     P_carrier = (AM)²/2   P_info = A²P_x/2   efficiency = P_x/(M² + P_x)</div>
+L.push({t:'Large-Carrier AM (LC-AM)',s:'7.4',k:'7.4',build(el){
+  el.innerHTML=`<div class="rule">need M ≥ max|x(t)|     P_carrier = (AM)²/2   P_info = A²P_x/2   efficiency = P_x/(M² + P_x)</div>
   <p class="try"><b>Try:</b> lower M below max|x| (= 1.1 here) and watch the envelope break (red). Then raise M and watch efficiency fall.</p>
   <div class="controls"><div class="ctl"><label for="M4">Carrier level M</label><input id="M4" type="range" min="0" max="3" step="0.05" value="1.2"><output id="M4o"></output></div></div>
   <div class="scope"><figure><figcaption>Time: y(t) (thin) and the envelope a detector would follow</figcaption><canvas id="d1"></canvas></figure>
@@ -231,9 +375,8 @@ L.push({t:'LC-AM: add a big carrier',s:'7.4',build(el){
 }});
 
 /* 5. Superheterodyne */
-L.push({t:'Superheterodyne radio',s:'7.5',build(el){
-  el.innerHTML=`<p class="idea">AM radio has stations every 10 kHz from 540 to 1600 kHz. A high-quality filter that also tunes is expensive, so the receiver uses <b>one fixed filter</b> at the intermediate frequency <b>f_IF = 455 kHz</b>, and mixes with a local oscillator (LO) to move whichever station you want onto 455 kHz. The catch: a second station, the <b>image</b>, also lands on 455 kHz.</p>
-  <div class="rule">low LO:  f_LO = |f_c − f_IF|,  image f_I = |f_c − 2f_IF|<br>high LO: f_LO = f_c + f_IF,   image f_I = f_c + 2f_IF</div>
+L.push({t:'Commercial AM Radio & Superheterodyne',s:'7.5',k:'7.5',build(el){
+  el.innerHTML=`<div class="rule">low LO:  f_LO = |f_c − f_IF|,  image f_I = |f_c − 2f_IF|<br>high LO: f_LO = f_c + f_IF,   image f_I = f_c + 2f_IF</div>
   <p class="try"><b>Try:</b> tune to 1450 kHz with the low LO: the image is 540 kHz, a real station. Switch to the high LO. Then turn on the image-rejection filter.</p>
   <div class="controls">
     <div class="ctl"><label for="fc5">Desired station f_c</label><input id="fc5" type="range" min="540" max="1600" step="10" value="1450"><output id="fc5o"></output></div>
@@ -274,9 +417,8 @@ L.push({t:'Superheterodyne radio',s:'7.5',build(el){
 }});
 
 /* 6. QAM and SSB */
-L.push({t:'QAM and SSB',s:'7.6–7.7',build(el){
-  el.innerHTML=`<p class="idea">SC-AM and LC-AM waste half the bandwidth: the upper and lower sidebands carry the same information. <b>QAM</b> fixes this by sending two messages on the same carrier, one on cos and one on sin. <b>SSB</b> fixes it by filtering away one sideband. Both need a coherent receiver, and both suffer when the phase φ is off.</p>
-  <div class="rule">QAM: y = A x₁cos(ω_c t) + A x₂sin(ω_c t)     x̂₁ = (A/2)(x₁cos φ − x₂sin φ)     x̂₂ = (A/2)(x₁sin φ + x₂cos φ)</div>
+L.push({t:'Quadrature and Single Sideband AM',s:'7.6',k:'7.6',build(el){
+  el.innerHTML=`<div class="rule">QAM: y = A x₁cos(ω_c t) + A x₂sin(ω_c t)     x̂₁ = (A/2)(x₁cos φ − x₂sin φ)     x̂₂ = (A/2)(x₁sin φ + x₂cos φ)</div>
   <p class="try"><b>Try:</b> in QAM, raise φ and watch x₂ leak into x̂₁ (cross-talk). Switch to SSB to see one sideband removed.</p>
   <div class="controls">
     <div class="ctl"><label>Scheme</label><div class="seg" id="sch"><button aria-pressed="true" data-v="qam">QAM</button><button data-v="ssb">SSB</button></div></div>
@@ -307,12 +449,13 @@ L.push({t:'QAM and SSB',s:'7.6–7.7',build(el){
    {q:'QAM with φ = 30°. x̂₁ is proportional to…',o:['x₁','x₁·(√3/2) − x₂·(1/2)','x₂','x₁·(1/2) + x₂·(√3/2)'],a:1,e:'x̂₁ = (A/2)(x₁cos 30° − x₂sin 30°).'},
    {q:'What does SSB do differently from SC-AM?',o:['Adds a carrier','Removes one sideband, halving the bandwidth to ω_B','Uses two carriers','Needs no receiver'],a:1,e:'The two sidebands of a real signal carry the same information, so one is filtered away.'}]));
 }});
+
 /* ---------- shell ---------- */
 let cur=0;
 function show(i){
   cur=i;const nav=$('#nav');nav.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-current',k===i));
   const m=$('#main');m.innerHTML='';const sec=document.createElement('section');sec.className='lesson';
-  sec.innerHTML=`<div><div class="eyebrow">Lesson ${i+1} of ${L.length} · notes §${L[i].s}</div><h2>${L[i].t}</h2></div>`;
+  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div><details class="notes" open><summary>From the notes · §${L[i].s}</summary>${NOTES[L[i].k]||''}${MORE[L[i].k]?'<h4 class="more">Going deeper: derivations, worked examples, exam traps</h4>'+MORE[L[i].k]:''}</details>`;
   const body=document.createElement('div');body.style.display='flex';body.style.flexDirection='column';body.style.gap='16px';sec.appendChild(body);m.appendChild(sec);
   L[i].build.call(L[i],body);
   const nr=document.createElement('div');nr.className='navrow';
@@ -321,8 +464,8 @@ function show(i){
   try{localStorage.setItem('ch7lab',i)}catch(e){}
 }
 function go(i){location.hash='lesson'+(i+1);}
-function fromHash(){const m=/lesson(\d)/.exec(location.hash);let i=m?+m[1]-1:0;if(!m){try{i=+(localStorage.getItem('ch7lab')||0)}catch(e){}}show(Math.min(Math.max(i,0),L.length-1));window.scrollTo({top:0});}
-L.forEach((l,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML=`<span class="n">${i+1}</span><span>${l.t}</span>`;b.onclick=()=>go(i);$('#nav').appendChild(b);});
+function fromHash(){const m=/lesson(\d+)/.exec(location.hash);let i=m?+m[1]-1:0;if(!m){try{i=+(localStorage.getItem('ch7lab')||0)}catch(e){}}show(Math.min(Math.max(i,0),L.length-1));window.scrollTo({top:0});}
+L.forEach((l,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML=`<span class="n">${l.s}</span><span>${l.t}</span>`;b.onclick=()=>go(i);$('#nav').appendChild(b);});
 window.addEventListener('hashchange',fromHash);
 let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>L[cur].draw&&L[cur].draw(),120);});
 const mq=matchMedia('(prefers-color-scheme: dark)');mq.addEventListener&&mq.addEventListener('change',()=>L[cur].draw&&L[cur].draw());
