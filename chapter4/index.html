@@ -80,6 +80,24 @@ h4.more{border-top:1px dashed var(--line);padding-top:12px;margin-top:18px;color
 .nx{background:var(--accent-soft);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:14px}
 code{font-family:var(--f-mono);font-size:13px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.summary{display:flex;flex-direction:column;gap:14px}
+.kidea{display:flex;gap:12px;align-items:flex-start;background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px}
+.kidea p{margin:0;font-size:16.5px;line-height:1.5;max-width:76ch}
+.tag{flex:none;font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;background:var(--accent);color:var(--panel);border-radius:4px;padding:3px 7px;margin-top:3px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.fbox,.howto,.cpic{border:1px solid var(--line);border-radius:10px;padding:12px 16px;background:var(--bg)}
+.summary h3,.tryh{font-family:var(--f-display);font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin:0 0 8px}
+.tryh{margin:6px 0 -4px;font-size:15px;border-top:1px solid var(--line);padding-top:16px}
+.fbox ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.fbox li{font-family:var(--f-mono);font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;overflow-x:auto}
+.howto ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+.figs{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end}
+.cfig{margin:0;min-width:0}
+.cfig svg{width:100%;height:auto;display:block;font-family:var(--f-body)}
+.cfig figcaption{font-size:13px;color:var(--muted);margin-top:4px;max-width:60ch}
+.notes.ex summary{color:var(--warn)}
+.notes p{margin:8px 0}
 .home{display:inline-block;margin-bottom:8px;color:var(--accent);text-decoration:none;font-weight:500}.home:hover{text-decoration:underline}
 :root{color-scheme:light}body{margin:0}
 </style>
@@ -88,7 +106,7 @@ code{font-family:var(--f-mono);font-size:13px}
 <div class="wrap">
 <header><a class="home" href="../">← All chapters</a>
   <h1>Chapter 4 Fourier Series Lab</h1>
-  <p>Follows your typeset notes section by section (4.1 → 4.7). Each page opens with the detailed notes for that section, including Examples 4.1–4.9, then a live plot you control and check questions.</p>
+  <p>Follows your typeset notes section by section (4.1 → 4.7). Each page starts with the big idea, formulas, a how-to and a concept picture, then the detailed notes, including Examples 4.1–4.9, then a live plot you control and check questions.</p>
 </header>
 <nav id="nav" aria-label="Sections"></nav>
 <main id="main"></main>
@@ -129,6 +147,86 @@ function quiz(id,items){
 }
 function updScore(){const v=Object.values(score);const el=$('#score');if(el)el.textContent=`${v.filter(Boolean).length} correct so far`;}
 
+/* ---------- concept figures (static SVG) ---------- */
+const COL={a:'var(--accent)',k:'var(--keep)',d:'var(--drop)',m:'var(--muted)',w:'var(--warn)',i:'var(--ink)'};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function txt(x,y,s,o={}){return `<text x="${x}" y="${y}" text-anchor="${o.a||'middle'}" fill="${COL[o.c||'i']}" font-size="${o.fs||13}" ${o.it?'font-style="italic"':''} font-weight="${o.b?600:400}">${esc(s)}</text>`;}
+/* block diagram: items like 'x(t)' (signal label) or '[LPF]' (box). rows = array of item arrays */
+function chain(items,o={}){
+  const cells=items.map(s=>{const box=s[0]==='[';const t=box?s.slice(1,-1):s;return{box,t,w:Math.max(box?54:30,t.length*7.4+(box?22:6))};});
+  const gap=30,H=o.h||70,y=H/2;let x=8,out='';
+  cells.forEach((c,i)=>{
+    if(c.box){out+=`<rect x="${x}" y="${y-19}" width="${c.w}" height="38" rx="7" fill="var(--accent-soft)" stroke="${COL.a}" stroke-width="1.5"/>`+txt(x+c.w/2,y+5,c.t,{b:1});}
+    else out+=txt(x+c.w/2,y+5,c.t,{c:'a',b:1});
+    x+=c.w;
+    if(i<cells.length-1){out+=`<line x1="${x+3}" y1="${y}" x2="${x+gap-5}" y2="${y}" stroke="${COL.m}" stroke-width="1.6" marker-end="url(#ah)"/>`;x+=gap;}
+  });
+  if(o.note)out+=txt(x/2+4,H-4,o.note,{c:'m',fs:12});
+  return svg(x+8,H,out);
+}
+function svg(w,h,inner){return `<svg viewBox="0 0 ${w} ${h}" style="max-width:${w}px" role="img"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker><marker id="ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--accent)"/></marker></defs>${inner}</svg>`;}
+/* function / spectrum sketch */
+function sk(o){
+  const W=o.w||460,H=o.h||170,l=22,r=W-14,t=18,b=H-30;
+  const [x0,x1]=o.xr,[y0,y1]=o.yr||[0,1.2];
+  const X=x=>l+(x-x0)/(x1-x0)*(r-l),Y=y=>b-(y-y0)/(y1-y0)*(b-t);
+  let s='';
+  (o.items||[]).forEach(it=>{
+    const c=COL[it.c||'a'];
+    if(it.t==='band')s+=`<rect x="${X(it.x0)}" y="${t-6}" width="${X(it.x1)-X(it.x0)}" height="${b-t+6}" fill="${c}" opacity=".13"/>`+(it.lab?txt((X(it.x0)+X(it.x1))/2,t+4,it.lab,{c:it.c||'a',fs:11}):'');
+  });
+  s+=`<line x1="${l}" y1="${Y(0)}" x2="${r}" y2="${Y(0)}" stroke="${COL.m}" stroke-width="1.2" marker-end="url(#ah)"/>`;
+  if(o.yaxis!==false&&x0<=0&&x1>=0)s+=`<line x1="${X(0)}" y1="${b+4}" x2="${X(0)}" y2="${t-8}" stroke="${COL.m}" stroke-width="1.2" marker-end="url(#ah)"/>`;
+  s+=txt(r-2,Y(0)+18,o.xl||'ω',{c:'m',it:1,a:'end'});
+  (o.ticks||[]).forEach(([x,lab])=>{s+=`<line x1="${X(x)}" y1="${Y(0)-3}" x2="${X(x)}" y2="${Y(0)+3}" stroke="${COL.m}"/>`+txt(X(x),Y(0)+16,lab,{c:'m',fs:11});});
+  (o.items||[]).forEach(it=>{
+    const c=COL[it.c||'a'],lw=it.lw||2.4,d=it.dash?`stroke-dasharray="5 4"`:'';
+    if(it.t==='fn'){let p='';const n=it.n||300,a=it.x0??x0,e=it.x1??x1;for(let i=0;i<=n;i++){const x=a+(e-a)*i/n,v=it.f(x);p+=(i?'L':'M')+X(x).toFixed(1)+','+Y(Math.max(y0,Math.min(y1,v))).toFixed(1);}
+      if(it.fill)s+=`<path d="${p}L${X(e)},${Y(0)}L${X(a)},${Y(0)}z" fill="${c}" opacity=".18"/>`;
+      s+=`<path d="${p}" fill="none" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='tri'){const p=`M${X(it.c0-it.w)},${Y(0)}L${X(it.c0)},${Y(it.h)}L${X(it.c0+it.w)},${Y(0)}`;s+=`<path d="${p}z" fill="${c}" opacity=".2"/><path d="${p}" fill="none" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='rect'){s+=`<rect x="${X(it.c0-it.w)}" y="${Y(it.h)}" width="${X(it.c0+it.w)-X(it.c0-it.w)}" height="${Y(0)-Y(it.h)}" fill="${c}" fill-opacity=".18" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='imp'){s+=`<line x1="${X(it.x)}" y1="${Y(0)}" x2="${X(it.x)}" y2="${Y(it.h)}" stroke="${c}" stroke-width="2.4" marker-end="url(#ai)"/>`;}
+    if(it.t==='bar'){s+=`<line x1="${X(it.x)}" y1="${Y(0)}" x2="${X(it.x)}" y2="${Y(it.h)}" stroke="${c}" stroke-width="3"/><circle cx="${X(it.x)}" cy="${Y(it.h)}" r="3.5" fill="${c}"/>`;}
+    if(it.t==='hl'){s+=`<line x1="${X(it.x0??x0)}" y1="${Y(it.y)}" x2="${X(it.x1??x1)}" y2="${Y(it.y)}" stroke="${c}" stroke-width="1.2" stroke-dasharray="4 4"/>`;}
+    if(it.t==='vl'){s+=`<line x1="${X(it.x)}" y1="${Y(it.y0??y0)}" x2="${X(it.x)}" y2="${Y(it.y1??y1)}" stroke="${c}" stroke-width="1.2" stroke-dasharray="4 4"/>`;}
+    if(it.lab&&it.t!=='band'){const lx=it.lx??(it.x??it.c0??x0),ly=it.ly??((it.h??it.y??0)+(y1-y0)*0.08);s+=txt(X(lx),Y(ly)-2,it.lab,{c:it.c||'a',fs:12,b:1,a:it.la||'middle'});}
+    if(it.t==='arrow'){s+=`<line x1="${X(it.x0)}" y1="${Y(it.y0)}" x2="${X(it.x1)}" y2="${Y(it.y1)}" stroke="${c}" stroke-width="1.6" marker-end="url(#ah)"/>`;}
+  });
+  (o.labels||[]).forEach(([x,y,s2,c,a])=>{s+=txt(X(x),Y(y),s2,{c:c||'i',fs:12,a:a||'middle'});});
+  return svg(W,H,s);
+}
+const FIG=(...cells)=>`<div class="figs">${cells.map(([s,cap])=>`<figure class="cfig" style="flex:1 1 ${+(/viewBox="0 0 ([\d.]+)/.exec(s)||[0,300])[1]}px;max-width:${+(/viewBox="0 0 ([\d.]+)/.exec(s)||[0,300])[1]}px">${s}${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`).join('')}</div>`;
+/* ---------- summary cards ---------- */
+const sqw=t=>{const u=((t%2)+2)%2;return u<1?1:0;};
+const sqN=(t,N)=>{let s=.5;for(let n=1;n<=N;n+=2)s+=2/(n*Math.PI)*Math.sin(n*Math.PI*t);return s;};
+const KEY={
+'4.1':{idea:'Any periodic signal is a sum of complex exponentials at multiples of one base frequency ω<sub>0</sub> = 2π/T<sub>0</sub>. The weight of each one is c<sub>n</sub>, found with one integral.',
+ f:['x(t) = Σ c<sub>n</sub> e<sup>jnω<sub>0</sub>t</sup>,  ω<sub>0</sub> = 2π/T<sub>0</sub>','c<sub>n</sub> = (1/T<sub>0</sub>) ∫<sub>one period</sub> x(t) e<sup>−jnω<sub>0</sub>t</sup> dt','c<sub>0</sub> = average value of x (DC)','e<sup>−jnπ</sup> = (−1)<sup>n</sup>,  e<sup>−j2πn</sup> = 1'],
+ steps:['Find T<sub>0</sub> and ω<sub>0</sub> = 2π/T<sub>0</sub>.','Do n = 0 separately: c<sub>0</sub> = average.','For n ≠ 0, integrate piece by piece over one period (split where x changes formula).','Simplify with e<sup>−jnπ</sup> = (−1)<sup>n</sup>; check even/odd n.','Square wave (Ex 4.1): c<sub>0</sub> = ½, c<sub>n</sub> = 1/(jπn) for odd n, 0 for even n.'],
+ fig:()=>FIG([sk({xr:[-2,4],yr:[-0.3,1.3],xl:'t',ticks:[[1,'1'],[2,'2 = T0']],items:[{t:'fn',f:sqw,c:'m',n:800,lw:1.5},{t:'fn',f:t=>sqN(t,1),c:'w',lw:1.4,dash:1},{t:'fn',f:t=>sqN(t,9),n:800}],labels:[[3.3,1.15,'9 terms','a'],[-1.4,1.15,'1 term','w']]}),'Adding harmonics builds the square wave. More terms → closer (the ~9% overshoot at jumps never goes away: Gibbs).'])},
+'4.2':{idea:'Plot |c<sub>n</sub>| and ∠c<sub>n</sub> against frequency nω<sub>0</sub>: that\'s the line spectrum. For real signals, |c<sub>n</sub>| is even and ∠c<sub>n</sub> is odd.',
+ f:['c<sub>−n</sub> = c<sub>n</sub>*  (real x)','|c<sub>−n</sub>| = |c<sub>n</sub>|,   ∠c<sub>−n</sub> = −∠c<sub>n</sub>','square wave: |c<sub>n</sub>| = 1/(π|n|) odd n; ∠c<sub>n</sub> = −π/2 (n &gt; 0)'],
+ steps:['Compute c<sub>n</sub> (4.1).','Magnitude |c<sub>n</sub>| and angle ∠c<sub>n</sub> for each n.','Draw a stick at each nω<sub>0</sub>; mirror for negative n.'],
+ fig:()=>FIG([sk({xr:[-6,6],yr:[0,0.62],ticks:[[-5,'−5ω0'],[-3,'−3ω0'],[-1,'−ω0'],[1,'ω0'],[3,'3ω0'],[5,'5ω0']],items:[{t:'bar',x:0,h:.5,c:'k',lab:'½'},...[1,3,5].flatMap(n=>[{t:'bar',x:n,h:1/(n*Math.PI)},{t:'bar',x:-n,h:1/(n*Math.PI)}])]}),'|cn| of the square wave: sticks at harmonics, even in n, even harmonics are 0.'])},
+'4.3':{idea:'For real signals, pair up c<sub>n</sub> and c<sub>−n</sub> to get real cosines and sines. Polar form: x = c<sub>0</sub> + Σ 2|c<sub>n</sub>|cos(nω<sub>0</sub>t + ∠c<sub>n</sub>).',
+ f:['x = a<sub>0</sub> + Σ a<sub>n</sub>cos(nω<sub>0</sub>t) + Σ b<sub>n</sub>sin(nω<sub>0</sub>t)','a<sub>0</sub> = c<sub>0</sub>,  a<sub>n</sub> = 2Re{c<sub>n</sub>},  b<sub>n</sub> = −2Im{c<sub>n</sub>}','polar: x = c<sub>0</sub> + Σ 2|c<sub>n</sub>| cos(nω<sub>0</sub>t + ∠c<sub>n</sub>)','reverse: A cos(ωt + θ) → c = (A/2)e<sup>jθ</sup> at +ω, conjugate at −ω'],
+ steps:['Have c<sub>n</sub>? Amplitude of harmonic n is 2|c<sub>n</sub>|, phase is ∠c<sub>n</sub>.','Have a cosine sum? Each A cos(nω<sub>0</sub>t + θ) gives c<sub>±n</sub> = (A/2)e<sup>±jθ</sup>.','DC is c<sub>0</sub> itself (no factor 2).'],
+ fig:()=>FIG([sk({xr:[-0.5,4.5],yr:[0,2.3],ticks:[[0,'0'],[1,'ω0'],[3,'3ω0']],items:[{t:'bar',x:0,h:.5,c:'k',lab:'c0'},{t:'bar',x:1,h:2/Math.PI,lab:'2|c1|'},{t:'bar',x:3,h:2/(3*Math.PI),lab:'2|c3|'}],labels:[[3,1.8,'one-sided: cosine amplitudes','m']]}),'One-sided picture: DC = c0, every other harmonic has amplitude 2|cn|.'])},
+'4.4':{idea:'Send a periodic signal into an LTI system and each harmonic is treated separately: multiply c<sub>n</sub> by H(jnω<sub>0</sub>). The period stays the same.',
+ f:['y(t) = Σ c<sub>n</sub> H(jnω<sub>0</sub>) e<sup>jnω<sub>0</sub>t</sup>','d<sub>n</sub> = c<sub>n</sub>·H(jnω<sub>0</sub>)','RC: H = 1/(1 + jωRC)   delay: H = e<sup>−jωt<sub>0</sub></sup>   derivative: H = jω'],
+ steps:['List the harmonics nω<sub>0</sub> present.','Evaluate H at each one (magnitude and phase).','New amplitude = old × |H|, new phase = old + ∠H.','Rebuild y(t).'],
+ fig:()=>FIG([chain(['c<sub>n</sub>'.replace(/<\/?sub>/g,''),'[× H(jnω0)]','dn = cn·H(jnω0)'],{h:60}),''],
+  [sk({xr:[0,4],yr:[-0.2,1.3],xl:'t',ticks:[[1,'1'],[2,'2']],items:[{t:'fn',f:sqw,c:'m',lw:1.4,n:800},{t:'fn',f:t=>{const u=((t%2)+2)%2,a=4,e=Math.exp(-a),y0=e/(1+e),y1=1-(1-y0)*e;return u<1?1-(1-y0)*Math.exp(-a*u):y1*Math.exp(-a*(u-1));},n:800}]}),'Square wave through an RC lowpass: high harmonics are cut, so the edges round off.'])},
+'4.5':{idea:'Parseval: the average power is the sum of the powers of each harmonic, |c<sub>n</sub>|². In cosine form: DC² + Σ (amplitude)²/2.',
+ f:['P = (1/T<sub>0</sub>) ∫ |x|² dt = Σ |c<sub>n</sub>|²','real x: P = c<sub>0</sub>² + Σ<sub>n≥1</sub> 2|c<sub>n</sub>|²','A cos(…) has power A²/2; DC D has power D²'],
+ steps:['Write x as DC + cosines (or get c<sub>n</sub>).','Add DC² + each amplitude²/2.','"Keep 99% of power": add harmonics until the running sum ≥ 0.99P.','Example: 2 + 0.5cos(t+45°) + 2cos3t + 2cos(4t+120°) → 4 + 0.125 + 2 + 2 = 8.125.'],
+ fig:()=>FIG([sk({xr:[-0.5,7.5],yr:[0,0.32],ticks:[[0,'DC'],[1,'1'],[3,'3'],[5,'5'],[7,'7']],items:[{t:'bar',x:0,h:.25,c:'k',lab:'¼'},...[1,3,5,7].map(n=>({t:'bar',x:n,h:2/(Math.PI*n)**2}))],labels:[[5,.25,'power per harmonic (square wave)','m']]}),'Power spectrum of the square wave: ¼ (DC) + 0.203 + 0.023 + … = ½.'])},
+'4.6':{idea:'A signal is like a vector, and e<sup>jnω<sub>0</sub>t</sup> are perpendicular axes. c<sub>n</sub> is just the projection of x onto axis n.',
+ f:['orthogonal axes: c<sub>i</sub> = ⟨x, φ<sub>i</sub>⟩ / ‖φ<sub>i</sub>‖²','⟨x, y⟩ = ∫<sub>0</sub><sup>T<sub>0</sub></sup> x(t)y*(t) dt','‖e<sup>jnω<sub>0</sub>t</sup>‖² = T<sub>0</sub>  ⇒  c<sub>n</sub> = (1/T<sub>0</sub>)∫x e<sup>−jnω<sub>0</sub>t</sup>dt'],
+ steps:['Vectors: φ<sub>1</sub> = [1,1], φ<sub>2</sub> = [−1,1], x = [7,5] → c<sub>1</sub> = 12/2 = 6, c<sub>2</sub> = −2/2 = −1.','Signals: same formula with the integral inner product = the c<sub>n</sub> formula.'],
+ fig:()=>FIG([(()=>{const o=60,b=180,S=22,P=(x,y)=>[o+x*S,b-y*S];let s=`<line x1="20" y1="${b}" x2="230" y2="${b}" stroke="var(--muted)"/><line x1="${o}" y1="${b+5}" x2="${o}" y2="10" stroke="var(--muted)"/>`;const ar=(x,y,c,l,dx=6,dy=-4)=>{const[p,q]=P(x,y);return `<line x1="${o}" y1="${b}" x2="${p}" y2="${q}" stroke="${c}" stroke-width="2.4" marker-end="url(#ai)"/>`+`<text x="${p+dx}" y="${q+dy}" font-size="12" fill="${c}" font-weight="600">${l}</text>`;};s+=ar(6,6,'var(--keep)','6φ1',-40,-6)+ar(1,1,'var(--accent)','φ1')+ar(-1,1,'var(--accent)','φ2',-22)+ar(7,5,'var(--ink)','x = [7,5]',6,10);const[p,q]=P(6,6),[u,v]=P(7,5);s+=`<line x1="${p}" y1="${q}" x2="${u}" y2="${v}" stroke="var(--warn)" stroke-dasharray="4 3" stroke-width="1.6"/>`;return svg(250,200,s);})(),'Project x onto each perpendicular axis: 6 along φ1, −1 along φ2. Fourier coefficients work the same way.'])}
+};
 const NOTES={
 '4.1':`
 <p><b>Motivation.</b> For an LTI system with FRF H(jω), complex exponentials are eigenfunctions: e<sup>jωt</sup> → H(jω)e<sup>jωt</sup>, and cos(ωt + φ) → |H(jω)|cos(ωt + φ + ∠H(jω)). By linearity, a <b>sum</b> of exponentials goes through term by term. Wouldn't it be nice to write any signal as such a sum? For <b>periodic</b> signals this can be done exactly: the Fourier Series.</p>
@@ -436,7 +534,15 @@ let cur=0;
 function show(i){
   cur=i;const nav=$('#nav');nav.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-current',k===i));
   const m=$('#main');m.innerHTML='';const sec=document.createElement('section');sec.className='lesson';
-  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div><details class="notes" open><summary>From the notes · §${L[i].s}</summary>${NOTES[L[i].k]||''}${MORE[L[i].k]?'<h4 class="more">Going deeper: derivations, worked examples, exam traps</h4>'+MORE[L[i].k]:''}</details>`;
+  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null;
+  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div>`+
+  (K?`<div class="summary"><div class="kidea"><span class="tag">Big idea</span><p>${K.idea}</p></div>
+   <div class="sgrid"><div class="fbox"><h3>Formulas to know</h3><ul>${K.f.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+   <div class="howto"><h3>How to use it</h3><ol>${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol></div></div>
+   <div class="cpic"><h3>Picture it</h3>${K.fig()}</div></div>`:'')+
+  `<details class="notes"><summary>Full notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
+  (MORE[L[i].k]?`<details class="notes ex" open><summary>Worked examples &amp; exam traps</summary>${MORE[L[i].k]}</details>`:'')+
+  `<h3 class="tryh">Try it live</h3>`;
   const body=document.createElement('div');body.style.display='flex';body.style.flexDirection='column';body.style.gap='16px';sec.appendChild(body);m.appendChild(sec);
   L[i].build.call(L[i],body);
   const nr=document.createElement('div');nr.className='navrow';

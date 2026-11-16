@@ -80,6 +80,24 @@ h4.more{border-top:1px dashed var(--line);padding-top:12px;margin-top:18px;color
 .nx{background:var(--accent-soft);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:14px}
 code{font-family:var(--f-mono);font-size:13px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.summary{display:flex;flex-direction:column;gap:14px}
+.kidea{display:flex;gap:12px;align-items:flex-start;background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px}
+.kidea p{margin:0;font-size:16.5px;line-height:1.5;max-width:76ch}
+.tag{flex:none;font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;background:var(--accent);color:var(--panel);border-radius:4px;padding:3px 7px;margin-top:3px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.fbox,.howto,.cpic{border:1px solid var(--line);border-radius:10px;padding:12px 16px;background:var(--bg)}
+.summary h3,.tryh{font-family:var(--f-display);font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin:0 0 8px}
+.tryh{margin:6px 0 -4px;font-size:15px;border-top:1px solid var(--line);padding-top:16px}
+.fbox ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.fbox li{font-family:var(--f-mono);font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;overflow-x:auto}
+.howto ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+.figs{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end}
+.cfig{margin:0;min-width:0}
+.cfig svg{width:100%;height:auto;display:block;font-family:var(--f-body)}
+.cfig figcaption{font-size:13px;color:var(--muted);margin-top:4px;max-width:60ch}
+.notes.ex summary{color:var(--warn)}
+.notes p{margin:8px 0}
 .home{display:inline-block;margin-bottom:8px;color:var(--accent);text-decoration:none;font-weight:500}.home:hover{text-decoration:underline}
 :root{color-scheme:light}body{margin:0}
 </style>
@@ -88,7 +106,7 @@ code{font-family:var(--f-mono);font-size:13px}
 <div class="wrap">
 <header><a class="home" href="../">← All chapters</a>
   <h1>Chapter 5 Fourier Transform Lab</h1>
-  <p>Follows your typeset notes section by section (5.1 → 5.3.11). Each page opens with the detailed notes for that section, including Examples 5.1–5.10, then a live plot you control and check questions.</p>
+  <p>Follows your typeset notes section by section (5.1 → 5.3.11). Each page starts with the big idea, formulas, a how-to and a concept picture, then the detailed notes, including Examples 5.1–5.10, then a live plot you control and check questions.</p>
 </header>
 <nav id="nav" aria-label="Sections"></nav>
 <main id="main"></main>
@@ -129,6 +147,90 @@ function quiz(id,items){
 }
 function updScore(){const v=Object.values(score);const el=$('#score');if(el)el.textContent=`${v.filter(Boolean).length} correct so far`;}
 
+/* ---------- concept figures (static SVG) ---------- */
+const COL={a:'var(--accent)',k:'var(--keep)',d:'var(--drop)',m:'var(--muted)',w:'var(--warn)',i:'var(--ink)'};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function txt(x,y,s,o={}){return `<text x="${x}" y="${y}" text-anchor="${o.a||'middle'}" fill="${COL[o.c||'i']}" font-size="${o.fs||13}" ${o.it?'font-style="italic"':''} font-weight="${o.b?600:400}">${esc(s)}</text>`;}
+/* block diagram: items like 'x(t)' (signal label) or '[LPF]' (box). rows = array of item arrays */
+function chain(items,o={}){
+  const cells=items.map(s=>{const box=s[0]==='[';const t=box?s.slice(1,-1):s;return{box,t,w:Math.max(box?54:30,t.length*7.4+(box?22:6))};});
+  const gap=30,H=o.h||70,y=H/2;let x=8,out='';
+  cells.forEach((c,i)=>{
+    if(c.box){out+=`<rect x="${x}" y="${y-19}" width="${c.w}" height="38" rx="7" fill="var(--accent-soft)" stroke="${COL.a}" stroke-width="1.5"/>`+txt(x+c.w/2,y+5,c.t,{b:1});}
+    else out+=txt(x+c.w/2,y+5,c.t,{c:'a',b:1});
+    x+=c.w;
+    if(i<cells.length-1){out+=`<line x1="${x+3}" y1="${y}" x2="${x+gap-5}" y2="${y}" stroke="${COL.m}" stroke-width="1.6" marker-end="url(#ah)"/>`;x+=gap;}
+  });
+  if(o.note)out+=txt(x/2+4,H-4,o.note,{c:'m',fs:12});
+  return svg(x+8,H,out);
+}
+function svg(w,h,inner){return `<svg viewBox="0 0 ${w} ${h}" style="max-width:${w}px" role="img"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker><marker id="ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--accent)"/></marker></defs>${inner}</svg>`;}
+/* function / spectrum sketch */
+function sk(o){
+  const W=o.w||460,H=o.h||170,l=22,r=W-14,t=18,b=H-30;
+  const [x0,x1]=o.xr,[y0,y1]=o.yr||[0,1.2];
+  const X=x=>l+(x-x0)/(x1-x0)*(r-l),Y=y=>b-(y-y0)/(y1-y0)*(b-t);
+  let s='';
+  (o.items||[]).forEach(it=>{
+    const c=COL[it.c||'a'];
+    if(it.t==='band')s+=`<rect x="${X(it.x0)}" y="${t-6}" width="${X(it.x1)-X(it.x0)}" height="${b-t+6}" fill="${c}" opacity=".13"/>`+(it.lab?txt((X(it.x0)+X(it.x1))/2,t+4,it.lab,{c:it.c||'a',fs:11}):'');
+  });
+  s+=`<line x1="${l}" y1="${Y(0)}" x2="${r}" y2="${Y(0)}" stroke="${COL.m}" stroke-width="1.2" marker-end="url(#ah)"/>`;
+  if(o.yaxis!==false&&x0<=0&&x1>=0)s+=`<line x1="${X(0)}" y1="${b+4}" x2="${X(0)}" y2="${t-8}" stroke="${COL.m}" stroke-width="1.2" marker-end="url(#ah)"/>`;
+  s+=txt(r-2,Y(0)+18,o.xl||'ω',{c:'m',it:1,a:'end'});
+  (o.ticks||[]).forEach(([x,lab])=>{s+=`<line x1="${X(x)}" y1="${Y(0)-3}" x2="${X(x)}" y2="${Y(0)+3}" stroke="${COL.m}"/>`+txt(X(x),Y(0)+16,lab,{c:'m',fs:11});});
+  (o.items||[]).forEach(it=>{
+    const c=COL[it.c||'a'],lw=it.lw||2.4,d=it.dash?`stroke-dasharray="5 4"`:'';
+    if(it.t==='fn'){let p='';const n=it.n||300,a=it.x0??x0,e=it.x1??x1;for(let i=0;i<=n;i++){const x=a+(e-a)*i/n,v=it.f(x);p+=(i?'L':'M')+X(x).toFixed(1)+','+Y(Math.max(y0,Math.min(y1,v))).toFixed(1);}
+      if(it.fill)s+=`<path d="${p}L${X(e)},${Y(0)}L${X(a)},${Y(0)}z" fill="${c}" opacity=".18"/>`;
+      s+=`<path d="${p}" fill="none" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='tri'){const p=`M${X(it.c0-it.w)},${Y(0)}L${X(it.c0)},${Y(it.h)}L${X(it.c0+it.w)},${Y(0)}`;s+=`<path d="${p}z" fill="${c}" opacity=".2"/><path d="${p}" fill="none" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='rect'){s+=`<rect x="${X(it.c0-it.w)}" y="${Y(it.h)}" width="${X(it.c0+it.w)-X(it.c0-it.w)}" height="${Y(0)-Y(it.h)}" fill="${c}" fill-opacity=".18" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='imp'){s+=`<line x1="${X(it.x)}" y1="${Y(0)}" x2="${X(it.x)}" y2="${Y(it.h)}" stroke="${c}" stroke-width="2.4" marker-end="url(#ai)"/>`;}
+    if(it.t==='bar'){s+=`<line x1="${X(it.x)}" y1="${Y(0)}" x2="${X(it.x)}" y2="${Y(it.h)}" stroke="${c}" stroke-width="3"/><circle cx="${X(it.x)}" cy="${Y(it.h)}" r="3.5" fill="${c}"/>`;}
+    if(it.t==='hl'){s+=`<line x1="${X(it.x0??x0)}" y1="${Y(it.y)}" x2="${X(it.x1??x1)}" y2="${Y(it.y)}" stroke="${c}" stroke-width="1.2" stroke-dasharray="4 4"/>`;}
+    if(it.t==='vl'){s+=`<line x1="${X(it.x)}" y1="${Y(it.y0??y0)}" x2="${X(it.x)}" y2="${Y(it.y1??y1)}" stroke="${c}" stroke-width="1.2" stroke-dasharray="4 4"/>`;}
+    if(it.lab&&it.t!=='band'){const lx=it.lx??(it.x??it.c0??x0),ly=it.ly??((it.h??it.y??0)+(y1-y0)*0.08);s+=txt(X(lx),Y(ly)-2,it.lab,{c:it.c||'a',fs:12,b:1,a:it.la||'middle'});}
+    if(it.t==='arrow'){s+=`<line x1="${X(it.x0)}" y1="${Y(it.y0)}" x2="${X(it.x1)}" y2="${Y(it.y1)}" stroke="${c}" stroke-width="1.6" marker-end="url(#ah)"/>`;}
+  });
+  (o.labels||[]).forEach(([x,y,s2,c,a])=>{s+=txt(X(x),Y(y),s2,{c:c||'i',fs:12,a:a||'middle'});});
+  return svg(W,H,s);
+}
+const FIG=(...cells)=>`<div class="figs">${cells.map(([s,cap])=>`<figure class="cfig" style="flex:1 1 ${+(/viewBox="0 0 ([\d.]+)/.exec(s)||[0,300])[1]}px;max-width:${+(/viewBox="0 0 ([\d.]+)/.exec(s)||[0,300])[1]}px">${s}${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`).join('')}</div>`;
+/* ---------- summary cards ---------- */
+const snc=x=>Math.abs(x)<1e-9?1:Math.sin(Math.PI*x)/(Math.PI*x);
+const KEY={
+'5.1':{idea:'The Fourier transform is the Fourier series of a signal that never repeats (T<sub>0</sub> → ∞). The harmonic sticks squeeze together into a continuous curve X(jω).',
+ f:['X(jω) = ∫ x(t) e<sup>−jωt</sup> dt','x(t) = (1/2π) ∫ X(jω) e<sup>jωt</sup> dω','X(0) = ∫ x(t) dt  (area)','exists if ∫|x| dt &lt; ∞ (and piecewise continuous)'],
+ steps:['Write x(t) piece by piece (limits where it is nonzero).','Integrate x(t)e<sup>−jωt</sup> over those limits.','Check: X(0) should equal the area of x.','Usually faster: use a table pair + a property (5.2, 5.3).'],
+ fig:()=>FIG([sk({xr:[-30,30],yr:[-0.3,1.15],ticks:[[-12.57,'−4π'],[-6.28,'−2π'],[0,'0'],[6.28,'2π'],[12.57,'4π']],items:[{t:'fn',f:w=>snc(w/(2*Math.PI)),c:'m',lw:1.6},...Array.from({length:21},(_,i)=>{const w=(i-10)*2.8;return{t:'bar',x:w,h:snc(w/(2*Math.PI)),c:'a'};})]}),'Series of a repeated pulse (dots) sits on the transform curve (grey). As the period grows, the dots fill it in.'])},
+'5.2':{idea:'Learn a handful of pairs by heart; almost every exam problem is a pair plus a property. Narrow in time ⇔ wide in frequency.',
+ f:['rect(t/τ) ↔ τ·sinc(ωτ/2π)','e<sup>−at</sup>u(t) ↔ 1/(a + jω)','e<sup>−a|t|</sup> ↔ 2a/(a² + ω²)','t·e<sup>−at</sup>u(t) ↔ 1/(a + jω)²','δ(t) ↔ 1,   1 ↔ 2πδ(ω),   e<sup>jω<sub>0</sub>t</sup> ↔ 2πδ(ω − ω<sub>0</sub>)','cos ω<sub>0</sub>t ↔ π[δ(ω−ω<sub>0</sub>) + δ(ω+ω<sub>0</sub>)],   u(t) ↔ πδ(ω) + 1/(jω)','sin(Wt)/(πt) ↔ rect: 1 for |ω| &lt; W'],
+ steps:['Match the shape of x(t) (or X) to a pair.','Read off a, τ, W from the problem.','Sample P3: X = 1 on |ω| &lt; 1 → x = sin t/(πt) → x(π) = 0.'],
+ fig:()=>FIG([sk({w:230,xr:[-3,3],yr:[0,1.3],xl:'t',items:[{t:'rect',c0:0,w:.5,h:1},{t:'rect',c0:0,w:1.5,h:1,c:'k',dash:1,lw:1.5}]}),'narrow pulse (blue), wide pulse (green)'],
+  [sk({w:230,xr:[-25,25],yr:[-0.35,3.3],items:[{t:'fn',f:w=>snc(w/(2*Math.PI)),lw:2},{t:'fn',f:w=>3*snc(3*w/(2*Math.PI)),c:'k',lw:1.5,n:600}]}),'its spectrum: narrow ↔ wide, wide ↔ narrow'])},
+'5.3a':{idea:'Properties let you transform new signals without integrating. Shifting in time only changes phase; squeezing in time stretches the spectrum; swapping t and ω (duality) gives a free new pair.',
+ f:['linearity: ax + by ↔ aX + bY','shift: x(t − t<sub>0</sub>) ↔ e<sup>−jωt<sub>0</sub></sup>X(jω)  (|X| unchanged)','scaling: x(αt) ↔ (1/|α|)X(jω/α)','duality: X(jt) ↔ 2π·x(−ω)','real x: |X| even, ∠X odd'],
+ steps:['Spot the base signal and which operations were applied.','Apply them one at a time (scale, then shift: watch the order).','Shift only adds a linear phase −ωt<sub>0</sub>.'],
+ fig:()=>FIG([sk({w:230,xr:[-3,4],yr:[0,1.3],xl:'t',ticks:[[1.5,'t0']],items:[{t:'rect',c0:0,w:.5,h:1,c:'m',lw:1.4},{t:'rect',c0:1.5,w:.5,h:1}]}),'x(t − t0): the pulse moves right'],
+  [sk({w:230,xr:[-20,20],yr:[-1.5,1.5],items:[{t:'fn',f:w=>-w*0.075,c:'a'}],labels:[[10,1,'∠ = −ωt0','a'],[-10,-1,'|X| unchanged','m']]}),'only the phase changes: a straight line, slope −t0'])},
+'5.3b':{idea:'Multiplying by e<sup>jω<sub>0</sub>t</sup> slides the spectrum to ω<sub>0</sub>. Multiplying by cos ω<sub>0</sub>t makes two half-height copies at ±ω<sub>0</sub>. This is the whole basis of AM (Ch 7).',
+ f:['x(t)e<sup>jω<sub>0</sub>t</sup> ↔ X(j(ω − ω<sub>0</sub>))','x(t)cos ω<sub>0</sub>t ↔ ½X(j(ω − ω<sub>0</sub>)) + ½X(j(ω + ω<sub>0</sub>))','x(t)sin ω<sub>0</sub>t ↔ (1/2j)[X(j(ω−ω<sub>0</sub>)) − X(j(ω+ω<sub>0</sub>))]'],
+ steps:['Draw X.','Copy it to +ω<sub>0</sub> and −ω<sub>0</sub>, halve the height.','Bandwidth of the result: each copy spans ω<sub>0</sub> ± W.'],
+ fig:()=>FIG([sk({xr:[-10,10],yr:[0,2.4],ticks:[[-6.28,'−2π'],[6.28,'2π']],items:[{t:'tri',c0:0,w:2,h:2,c:'m',lab:'X: height 2',lx:0,ly:2.15},{t:'tri',c0:6.28,w:2,h:1,lab:'1',lx:6.28,ly:1.15},{t:'tri',c0:-6.28,w:2,h:1,lab:'1',lx:-6.28,ly:1.15}]}),'Sample P6(b): triangle × cos(2πt) → copies at ±2π, half height; absolute bandwidth 4.'])},
+'5.3c':{idea:'Convolution in time becomes multiplication in frequency: Y = H·X. So find a system\'s output by multiplying transforms, then go back with partial fractions.',
+ f:['x * h ↔ X·H  (LTI: Y = H·X)','dx/dt ↔ jωX(jω)','t·x(t) ↔ j dX/dω','1/((a+jω)(b+jω)) = [1/(a+jω) − 1/(b+jω)]/(b − a)'],
+ steps:['Transform x and h.','Multiply: Y = HX (or X = Y/H, H = Y/X).','Partial fractions into 1/(a + jω) pieces.','Invert each with e<sup>−at</sup>u(t).','P4: H = 2(1+jω)/(4+jω) → |H(j1)| = √(8/17).   P7: X = Y/H = 1/(5+jω) → e<sup>−5t</sup>u(t).'],
+ fig:()=>FIG([chain(['x(t)','[F]','X(jω)','[× H(jω)]','Y(jω)','[F⁻¹]','y(t)'],{h:60}),'Multiplying is easier than convolving.'])},
+'5.3d':{idea:'Multiplying in time = convolving in frequency (with 1/2π). Cutting a cosine to a window of length T smears each spike into a sinc of width ~2π/T.',
+ f:['x(t)·w(t) ↔ (1/2π) X * W','cos ω<sub>0</sub>t · rect(t/T) ↔ (T/2)sinc((ω−ω<sub>0</sub>)T/2π) + (T/2)sinc((ω+ω<sub>0</sub>)T/2π)','first zeros at ω<sub>0</sub> ± 2π/T'],
+ steps:['Write the windowed signal as product of two known signals.','Spectrum = (1/2π)·(convolution); impulses just make shifted copies.','Longer window → narrower peak.'],
+ fig:()=>FIG([sk({xr:[0,20],yr:[-0.3,2.2],ticks:[[10,'ω0']],items:[{t:'fn',f:w=>2*Math.abs(snc((w-10)*4/(2*Math.PI))),n:600},{t:'fn',f:w=>0.7*Math.abs(snc((w-10)*1.4/(2*Math.PI))),c:'k',lw:1.6,n:600}],labels:[[13.5,1.7,'long window','a'],[16,0.6,'short window','k']]}),'Observing cos ω0t for longer gives a sharper, taller peak.'])},
+'5.3e':{idea:'Parseval: energy can be computed in time or in frequency. (1/2π)|X(jω)|² tells you where the energy lives in frequency.',
+ f:['E = ∫|x(t)|²dt = (1/2π)∫|X(jω)|²dω','ESD = (1/2π)|X(jω)|²','e<sup>−at</sup>u(t): E = 1/(2a); fraction in |ω| &lt; W = (2/π)tan<sup>−1</sup>(W/a)'],
+ steps:['Total energy: integrate |x|² in time (usually easier).','Energy in a band: (1/2π)∫ over that band of |X|², times 2 for ± sides.','Ex 5.10: e<sup>−2t</sup>u: E = ¼, half of it in |ω| &lt; 2.'],
+ fig:()=>FIG([sk({xr:[-10,10],yr:[0,0.3],ticks:[[-2,'−a'],[2,'a']],items:[{t:'fn',f:w=>1/(4+w*w),fill:1,x0:-2,x1:2,c:'k'},{t:'fn',f:w=>1/(4+w*w)}],labels:[[0,0.27,'50% of energy','k']]}),'|X|² of e^(−2t)u(t): exactly half the energy is inside |ω| &lt; a.'])}
+};
 const NOTES={
 '5.1':`
 <p>Any periodic x(t) has a Fourier Series, x(t) = Σc<sub>n</sub>e<sup>jnω<sub>0</sub>t</sup>, c<sub>n</sub> = (1/T<sub>0</sub>)∫x(t)e<sup>−jnω<sub>0</sub>t</sup>dt. The <b>Fourier Transform</b> extends this to <b>non-periodic</b> signals, as the limit T<sub>0</sub> → ∞.</p>
@@ -451,7 +553,15 @@ let cur=0;
 function show(i){
   cur=i;const nav=$('#nav');nav.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-current',k===i));
   const m=$('#main');m.innerHTML='';const sec=document.createElement('section');sec.className='lesson';
-  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div><details class="notes" open><summary>From the notes · §${L[i].s}</summary>${NOTES[L[i].k]||''}${MORE[L[i].k]?'<h4 class="more">Going deeper: derivations, worked examples, exam traps</h4>'+MORE[L[i].k]:''}</details>`;
+  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null;
+  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div>`+
+  (K?`<div class="summary"><div class="kidea"><span class="tag">Big idea</span><p>${K.idea}</p></div>
+   <div class="sgrid"><div class="fbox"><h3>Formulas to know</h3><ul>${K.f.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+   <div class="howto"><h3>How to use it</h3><ol>${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol></div></div>
+   <div class="cpic"><h3>Picture it</h3>${K.fig()}</div></div>`:'')+
+  `<details class="notes"><summary>Full notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
+  (MORE[L[i].k]?`<details class="notes ex" open><summary>Worked examples &amp; exam traps</summary>${MORE[L[i].k]}</details>`:'')+
+  `<h3 class="tryh">Try it live</h3>`;
   const body=document.createElement('div');body.style.display='flex';body.style.flexDirection='column';body.style.gap='16px';sec.appendChild(body);m.appendChild(sec);
   L[i].build.call(L[i],body);
   const nr=document.createElement('div');nr.className='navrow';

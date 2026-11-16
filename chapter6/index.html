@@ -80,6 +80,24 @@ h4.more{border-top:1px dashed var(--line);padding-top:12px;margin-top:18px;color
 .nx{background:var(--accent-soft);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:14px}
 code{font-family:var(--f-mono);font-size:13px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.summary{display:flex;flex-direction:column;gap:14px}
+.kidea{display:flex;gap:12px;align-items:flex-start;background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px}
+.kidea p{margin:0;font-size:16.5px;line-height:1.5;max-width:76ch}
+.tag{flex:none;font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;background:var(--accent);color:var(--panel);border-radius:4px;padding:3px 7px;margin-top:3px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.fbox,.howto,.cpic{border:1px solid var(--line);border-radius:10px;padding:12px 16px;background:var(--bg)}
+.summary h3,.tryh{font-family:var(--f-display);font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin:0 0 8px}
+.tryh{margin:6px 0 -4px;font-size:15px;border-top:1px solid var(--line);padding-top:16px}
+.fbox ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.fbox li{font-family:var(--f-mono);font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;overflow-x:auto}
+.howto ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+.figs{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end}
+.cfig{margin:0;min-width:0}
+.cfig svg{width:100%;height:auto;display:block;font-family:var(--f-body)}
+.cfig figcaption{font-size:13px;color:var(--muted);margin-top:4px;max-width:60ch}
+.notes.ex summary{color:var(--warn)}
+.notes p{margin:8px 0}
 .home{display:inline-block;margin-bottom:8px;color:var(--accent);text-decoration:none;font-weight:500}.home:hover{text-decoration:underline}
 :root{color-scheme:light}body{margin:0}
 </style>
@@ -88,12 +106,11 @@ code{font-family:var(--f-mono);font-size:13px}
 <div class="wrap">
 <header><a class="home" href="../">← All chapters</a>
   <h1>Chapter 6 Filter Lab</h1>
-  <p>Follows your typeset notes section by section (6.1 → 6.5). Each page opens with the detailed notes for that section, including Examples 6.1–6.9, then a live plot you control and check questions.</p>
+  <p>Follows your typeset notes section by section (6.1 → 6.5). Each page starts with the big idea, the formulas, a how-to and a picture, then the full notes, worked examples, and a live plot.</p>
 </header>
-<nav id="nav" aria-label="Lessons"></nav>
+<nav id="nav" aria-label="Sections"></nav>
 <main id="main"></main>
 </div>
-
 <script>
 const $=s=>document.querySelector(s);
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -130,7 +147,102 @@ function quiz(id,items){
 }
 function updScore(){const v=Object.values(score);const el=$('#score');if(el)el.textContent=`${v.filter(Boolean).length} correct so far`;}
 
-/* ---------- detailed notes, keyed by page ---------- */
+/* ---------- concept figures (static SVG) ---------- */
+const COL={a:'var(--accent)',k:'var(--keep)',d:'var(--drop)',m:'var(--muted)',w:'var(--warn)',i:'var(--ink)'};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function txt(x,y,s,o={}){return `<text x="${x}" y="${y}" text-anchor="${o.a||'middle'}" fill="${COL[o.c||'i']}" font-size="${o.fs||13}" ${o.it?'font-style="italic"':''} font-weight="${o.b?600:400}">${esc(s)}</text>`;}
+/* block diagram: items like 'x(t)' (signal label) or '[LPF]' (box). rows = array of item arrays */
+function chain(items,o={}){
+  const cells=items.map(s=>{const box=s[0]==='[';const t=box?s.slice(1,-1):s;return{box,t,w:Math.max(box?54:30,t.length*7.4+(box?22:6))};});
+  const gap=30,H=o.h||70,y=H/2;let x=8,out='';
+  cells.forEach((c,i)=>{
+    if(c.box){out+=`<rect x="${x}" y="${y-19}" width="${c.w}" height="38" rx="7" fill="var(--accent-soft)" stroke="${COL.a}" stroke-width="1.5"/>`+txt(x+c.w/2,y+5,c.t,{b:1});}
+    else out+=txt(x+c.w/2,y+5,c.t,{c:'a',b:1});
+    x+=c.w;
+    if(i<cells.length-1){out+=`<line x1="${x+3}" y1="${y}" x2="${x+gap-5}" y2="${y}" stroke="${COL.m}" stroke-width="1.6" marker-end="url(#ah)"/>`;x+=gap;}
+  });
+  if(o.note)out+=txt(x/2+4,H-4,o.note,{c:'m',fs:12});
+  return svg(x+8,H,out);
+}
+function svg(w,h,inner){return `<svg viewBox="0 0 ${w} ${h}" style="max-width:${w}px" role="img"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker><marker id="ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--accent)"/></marker></defs>${inner}</svg>`;}
+/* function / spectrum sketch */
+function sk(o){
+  const W=o.w||460,H=o.h||170,l=22,r=W-14,t=18,b=H-30;
+  const [x0,x1]=o.xr,[y0,y1]=o.yr||[0,1.2];
+  const X=x=>l+(x-x0)/(x1-x0)*(r-l),Y=y=>b-(y-y0)/(y1-y0)*(b-t);
+  let s='';
+  (o.items||[]).forEach(it=>{
+    const c=COL[it.c||'a'];
+    if(it.t==='band')s+=`<rect x="${X(it.x0)}" y="${t-6}" width="${X(it.x1)-X(it.x0)}" height="${b-t+6}" fill="${c}" opacity=".13"/>`+(it.lab?txt((X(it.x0)+X(it.x1))/2,t+4,it.lab,{c:it.c||'a',fs:11}):'');
+  });
+  s+=`<line x1="${l}" y1="${Y(0)}" x2="${r}" y2="${Y(0)}" stroke="${COL.m}" stroke-width="1.2" marker-end="url(#ah)"/>`;
+  if(o.yaxis!==false&&x0<=0&&x1>=0)s+=`<line x1="${X(0)}" y1="${b+4}" x2="${X(0)}" y2="${t-8}" stroke="${COL.m}" stroke-width="1.2" marker-end="url(#ah)"/>`;
+  s+=txt(r-2,Y(0)+18,o.xl||'ω',{c:'m',it:1,a:'end'});
+  (o.ticks||[]).forEach(([x,lab])=>{s+=`<line x1="${X(x)}" y1="${Y(0)-3}" x2="${X(x)}" y2="${Y(0)+3}" stroke="${COL.m}"/>`+txt(X(x),Y(0)+16,lab,{c:'m',fs:11});});
+  (o.items||[]).forEach(it=>{
+    const c=COL[it.c||'a'],lw=it.lw||2.4,d=it.dash?`stroke-dasharray="5 4"`:'';
+    if(it.t==='fn'){let p='';const n=it.n||300,a=it.x0??x0,e=it.x1??x1;for(let i=0;i<=n;i++){const x=a+(e-a)*i/n,v=it.f(x);p+=(i?'L':'M')+X(x).toFixed(1)+','+Y(Math.max(y0,Math.min(y1,v))).toFixed(1);}
+      if(it.fill)s+=`<path d="${p}L${X(e)},${Y(0)}L${X(a)},${Y(0)}z" fill="${c}" opacity=".18"/>`;
+      s+=`<path d="${p}" fill="none" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='tri'){const p=`M${X(it.c0-it.w)},${Y(0)}L${X(it.c0)},${Y(it.h)}L${X(it.c0+it.w)},${Y(0)}`;s+=`<path d="${p}z" fill="${c}" opacity=".2"/><path d="${p}" fill="none" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='rect'){s+=`<rect x="${X(it.c0-it.w)}" y="${Y(it.h)}" width="${X(it.c0+it.w)-X(it.c0-it.w)}" height="${Y(0)-Y(it.h)}" fill="${c}" fill-opacity=".18" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='imp'){s+=`<line x1="${X(it.x)}" y1="${Y(0)}" x2="${X(it.x)}" y2="${Y(it.h)}" stroke="${c}" stroke-width="2.4" marker-end="url(#ai)"/>`;}
+    if(it.t==='bar'){s+=`<line x1="${X(it.x)}" y1="${Y(0)}" x2="${X(it.x)}" y2="${Y(it.h)}" stroke="${c}" stroke-width="3"/><circle cx="${X(it.x)}" cy="${Y(it.h)}" r="3.5" fill="${c}"/>`;}
+    if(it.t==='hl'){s+=`<line x1="${X(it.x0??x0)}" y1="${Y(it.y)}" x2="${X(it.x1??x1)}" y2="${Y(it.y)}" stroke="${c}" stroke-width="1.2" stroke-dasharray="4 4"/>`;}
+    if(it.t==='vl'){s+=`<line x1="${X(it.x)}" y1="${Y(it.y0??y0)}" x2="${X(it.x)}" y2="${Y(it.y1??y1)}" stroke="${c}" stroke-width="1.2" stroke-dasharray="4 4"/>`;}
+    if(it.lab&&it.t!=='band'){const lx=it.lx??(it.x??it.c0??x0),ly=it.ly??((it.h??it.y??0)+(y1-y0)*0.08);s+=txt(X(lx),Y(ly)-2,it.lab,{c:it.c||'a',fs:12,b:1,a:it.la||'middle'});}
+    if(it.t==='arrow'){s+=`<line x1="${X(it.x0)}" y1="${Y(it.y0)}" x2="${X(it.x1)}" y2="${Y(it.y1)}" stroke="${c}" stroke-width="1.6" marker-end="url(#ah)"/>`;}
+  });
+  (o.labels||[]).forEach(([x,y,s2,c,a])=>{s+=txt(X(x),Y(y),s2,{c:c||'i',fs:12,a:a||'middle'});});
+  return svg(W,H,s);
+}
+const FIG=(...cells)=>`<div class="figs">${cells.map(([s,cap])=>`<figure class="cfig" style="flex:1 1 ${+(/viewBox="0 0 ([\d.]+)/.exec(s)||[0,300])[1]}px;max-width:${+(/viewBox="0 0 ([\d.]+)/.exec(s)||[0,300])[1]}px">${s}${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`).join('')}</div>`;
+/* ---------- summary cards ---------- */
+const KEY={
+'6.1':{idea:'A filter is a frequency-dependent volume knob: Y(jω) = H(jω)X(jω). An ideal filter multiplies each frequency by exactly 1 (keep) or 0 (delete).',
+ f:['Y(jω) = H(jω)·X(jω)','LPF keeps |ω| &lt; ω<sub>c</sub>   HPF keeps |ω| &gt; ω<sub>c</sub>','BPF keeps ω<sub>1</sub> &lt; |ω| &lt; ω<sub>2</sub>   BSF removes that band','cos(ωt) → |H(jω)|·cos(ωt + ∠H(jω))'],
+ steps:['List every frequency in x(t) (DC = 0, harmonics nω<sub>0</sub>).','Check each one against the passband.','Keep it (×1) or delete it (×0). Write y(t).','Power of y: add up (amplitude)²/2 of what survived (DC counts as amplitude²).'],
+ fig:()=>FIG([sk({xr:[-5,5],yr:[0,1.35],ticks:[[-2,'−ω<sub>c</sub>'.replace(/<\/?sub>/g,'')],[2,'ωc']],items:[{t:'rect',c0:0,w:2,h:1,c:'a',lab:'pass (×1)',lx:0,ly:1.12},{t:'band',x0:-5,x1:-2,c:'w',lab:'stop'},{t:'band',x0:2,x1:5,c:'w',lab:'stop'},{t:'bar',x:0,h:0.8,c:'k'},{t:'bar',x:1.2,h:0.6,c:'k'},{t:'bar',x:-1.2,h:0.6,c:'k'},{t:'bar',x:3.5,h:0.6,c:'w'},{t:'bar',x:-3.5,h:0.6,c:'w'}]}),'Ideal LPF: green lines are inside the passband and survive; red lines are outside and get deleted.'],
+  [sk({xr:[-5,5],yr:[0,1.35],ticks:[[-3.5,'−ω2'],[-1.5,'−ω1'],[1.5,'ω1'],[3.5,'ω2']],items:[{t:'rect',c0:2.5,w:1,h:1},{t:'rect',c0:-2.5,w:1,h:1},{t:'bar',x:0,h:.7,c:'w',lab:'DC blocked',ly:.85}]}),'Ideal BPF: only the band between ω1 and ω2 passes. DC never passes a BPF or HPF.'])},
+'6.2a':{idea:'Ideal filters can\'t be built. A delay is fine (linear phase = no distortion), but a perfectly sharp cutoff needs h(t) ≠ 0 before t = 0, which means the filter would respond before the input arrives.',
+ f:['H = e<sup>−jωt<sub>d</sub></sup> ⇒ y(t) = x(t − t<sub>d</sub>)  (pure delay)','filter delay D(ω) = d∠H/dω','ideal LPF: h(t) = (ω<sub>c</sub>/π)·sinc[ω<sub>c</sub>(t − t<sub>d</sub>)/π]','causal ⇔ h(t) = 0 for all t &lt; 0'],
+ steps:['Phase is a straight line through 0 with slope −t<sub>d</sub>? Then the output is just delayed.','Want to know if a filter can be built? Look at h(t) for t &lt; 0.','The ideal LPF\'s h(t) is a sinc with tails on both sides, so it is not causal.'],
+ fig:()=>FIG([sk({xr:[-6,10],yr:[-0.35,1.2],xl:'t',ticks:[[2,'td']],items:[{t:'band',x0:-6,x1:0,c:'w',lab:'t < 0: should be 0!'},{t:'fn',f:t=>{const u=(t-2)*1.6;return Math.abs(u)<1e-6?1:Math.sin(u)/u;},n:500}]}),'Impulse response of the ideal LPF: a sinc centered at td. The tail in the red region (t &lt; 0) never dies, so it is not causal.'])},
+'6.2b':{idea:'Real filters get a tolerance mask instead of a cliff: a passband (gain near 1), a stopband (gain small), and a transition band in between where anything goes.',
+ f:['passband: 1 − δ<sub>1</sub> ≤ |H| ≤ 1 + δ<sub>1</sub>, |ω| ≤ ω<sub>p</sub>','stopband: |H| ≤ δ<sub>2</sub>, |ω| ≥ ω<sub>s</sub>','transition band: ω<sub>p</sub> &lt; |ω| &lt; ω<sub>s</sub> (no rule)','"X dB down" ⇒ δ = 10<sup>−X/20</sup>  (40 dB → 0.01)'],
+ steps:['Turn words into numbers: δ<sub>1</sub>, ω<sub>p</sub>, δ<sub>2</sub>, ω<sub>s</sub> (convert Hz → rad/s with 2π).','Narrower transition band or smaller δ ⇒ harder ⇒ higher order filter.'],
+ fig:()=>FIG([sk({xr:[0,10],yr:[0,1.35],yaxis:false,ticks:[[3,'ωp'],[6,'ωs']],items:[{t:'band',x0:0,x1:3,c:'k',lab:'passband'},{t:'band',x0:3,x1:6,c:'m',lab:'transition'},{t:'band',x0:6,x1:10,c:'w',lab:'stopband'},{t:'hl',y:1.08,x0:0,x1:3,c:'k'},{t:'hl',y:0.92,x0:0,x1:3,c:'k'},{t:'hl',y:0.15,x0:6,x1:10,c:'w'},{t:'fn',f:w=>1/Math.sqrt(1+Math.pow(w/4.2,8))}],labels:[[1.5,0.75,'1 ± δ1','k'],[8,0.25,'≤ δ2','w']]}),'The mask: the curve must stay inside the green tolerance in the passband and under the red line in the stopband.'])},
+'6.2c':{idea:'The RC circuit is the simplest real lowpass filter. A capacitor can\'t charge fast enough to follow fast inputs, so high frequencies get shrunk. Everything depends on r = ω·RC.',
+ f:['H(jω) = 1 / (1 + jωRC),  ω<sub>c</sub> = 1/RC','|H| = 1/√(1 + (ωRC)²)','∠H = −tan<sup>−1</sup>(ωRC)','dB = 20·log<sub>10</sub>|H|  (1/√2 → −3 dB, 0.1 → −20 dB)'],
+ steps:['Compute r = ω·RC (= ω/ω<sub>c</sub>).','|H| = 1/√(1 + r²); dB = 20log<sub>10</sub>|H| (negative = shrinks).','Phase = −arctan(r).','y(t) = |H|·cos(ωt − arctan r). At the corner: −3 dB, −45°. After it: −20 dB per decade.'],
+ fig:()=>FIG([chain(['x(t)','[R]','[C to ground]','y(t) across C'],{h:60}),'Series R, output taken across C. Slow input: C keeps up. Fast input: C can\'t charge in time.'],
+  [sk({xr:[0,4],yr:[-45,8],xl:'log ω',yaxis:false,ticks:[[1,'0.1/RC'],[2,'1/RC'],[3,'10/RC']],items:[{t:'fn',f:u=>-10*Math.log10(1+Math.pow(10,2*(u-2)))},{t:'fn',f:u=>u<2?0:-20*(u-2),c:'m',dash:1,lw:1.4},{t:'vl',x:2,c:'m'}],labels:[[2.25,-9,'−3 dB at 1/RC','w','start'],[3.3,-22,'−20 dB/decade','m','start'],[0.6,3,'0 dB','m']]}),'Bode magnitude: flat, then −3 dB at the corner, then a straight drop of 20 dB per decade.'],
+  [sk({xr:[0,4],yr:[-100,12],xl:'log ω',yaxis:false,ticks:[[1,'0.1/RC'],[2,'1/RC'],[3,'10/RC']],items:[{t:'fn',f:u=>-Math.atan(Math.pow(10,u-2))*180/Math.PI},{t:'hl',y:-90,c:'m'},{t:'vl',x:2,c:'m'}],labels:[[2.1,-38,'−45°','w','start'],[0.5,-82,'−90°','m']]}),'Bode phase: 0° → −45° at the corner → −90°.'])},
+'6.3':{idea:'MATLAB draws Bode plots for you if you write H as a ratio of polynomials in s = jω and list the coefficients.',
+ f:['H = N(s)/D(s),  s = jω','(jω)² = −ω² ⇒ "10<sup>10</sup> − ω²" is s² + 10<sup>10</sup>','bode(N, D) with coefficient vectors, highest power first'],
+ steps:['Replace every jω with s.','Write N and D as coefficient lists, highest power first, with 0 for missing powers (s³ + 2 → [1 0 0 2]).','Run bode(N, D).'],
+ fig:()=>FIG([chain(['H(jω)','[jω → s]','[N, D vectors]','[bode(N,D)]','plots'],{h:60}),'Example 6.2: D(s) = s² + √2·10⁵ s + 10¹⁰ → D = [1 1.414e5 1e10].'])},
+'6.4':{idea:'To design a filter, you start from one prototype (Butterworth, cutoff 1 rad/s) and transform it. Butterworth poles sit evenly on the unit circle in the left half-plane.',
+ f:['H(jω) = 1/∏(jω − s<sub>k</sub>),  s<sub>k</sub> = e<sup>j(2k+N−1)π/2N</sup>','N = 1: 1/(jω + 1)','N = 2: 1/[(jω)² + √2·jω + 1]'],
+ steps:['Write the mask (ω<sub>p</sub>, ω<sub>s</sub>, gain limits).','Pick the order N and cutoff (6.4.2b).','Transform the prototype to LPF/HPF/BPF/BSF (6.4.2a).'],
+ fig:()=>FIG([(()=>{let s='';const cx=110,cy=95,R=70;s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--line)" stroke-width="1.5"/><line x1="20" y1="${cy}" x2="200" y2="${cy}" stroke="var(--muted)"/><line x1="${cx}" y1="15" x2="${cx}" y2="175" stroke="var(--muted)"/>`;const N=4;for(let k=1;k<=N;k++){const a=(2*k+N-1)*Math.PI/(2*N);s+=`<text x="${cx+R*Math.cos(a)}" y="${cy-R*Math.sin(a)+5}" text-anchor="middle" font-size="18" fill="var(--accent)" font-weight="700">×</text>`;}s+=txt(150,30,'N = 4 poles',{c:'a',fs:12})+txt(195,cy-6,'Re',{c:'m',fs:11})+txt(cx+14,22,'Im',{c:'m',fs:11});return svg(220,190,s);})(),'Butterworth poles (×): equally spaced on the unit circle, left half only.'])},
+'6.4.1':{idea:'Butterworth magnitude is 1/√(1 + ω<sup>2N</sup>): always −3 dB at ω = 1, and higher N makes it flatter in the passband and steeper after the cutoff.',
+ f:['|H(jω)| = 1/√(1 + ω<sup>2N</sup>)','|H(j0)| = 1,  |H(j1)| = 1/√2 for every N','roll-off: −20N dB/decade','with cutoff ω<sub>0</sub>: replace ω by ω/ω<sub>0</sub>'],
+ steps:['N = 1: one RC + buffer. N = 2: one op-amp stage (A = 3 − √2 ≈ 1.59).','Any N: chain 2nd-order stages (+ one 1st-order stage if N is odd).'],
+ fig:()=>FIG([sk({xr:[0,3],yr:[0,1.25],ticks:[[1,'1'],[2,'2'],[3,'3']],items:[{t:'fn',f:w=>1/Math.sqrt(1+w*w),c:'m',lab:'N=1',lx:2.5,ly:.5},{t:'fn',f:w=>1/Math.sqrt(1+w**4),c:'k',lab:'N=2',lx:1.75,ly:.38},{t:'fn',f:w=>1/Math.sqrt(1+w**16),lab:'N=8',lx:1.25,ly:.2},{t:'hl',y:0.707,c:'w'}],labels:[[0.25,0.76,'1/√2','w']]}),'All curves cross 1/√2 at ω = 1; bigger N is closer to the ideal brick wall.'])},
+'6.4.2a':{idea:'Every filter type is the same prototype with ω swapped for a new expression. LPF rescales, HPF flips (ω → ω<sub>0</sub>/ω), BPF/BSF map a band onto the prototype.',
+ f:['LPF: ω → ω′/ω<sub>0</sub>','HPF: ω → ω<sub>0</sub>/ω′','BPF: ω → (ω′² − ω<sub>1</sub>ω<sub>2</sub>)/(ω′(ω<sub>2</sub> − ω<sub>1</sub>))','BSF: ω → ω′(ω<sub>2</sub> − ω<sub>1</sub>)/(ω<sub>1</sub>ω<sub>2</sub> − ω′²)','|Ĥ| = G/√(1 + [new ω]<sup>2N</sup>)'],
+ steps:['Pick the substitution for the filter type.','Plug it into G/√(1 + (·)<sup>2N</sup>).','BPF center is √(ω<sub>1</sub>ω<sub>2</sub>); ω<sub>1</sub> and ω<sub>2</sub> are the −3 dB edges.'],
+ fig:()=>FIG([sk({w:220,xr:[0,4],yr:[0,1.3],yaxis:false,ticks:[[1.5,'ω0']],items:[{t:'fn',f:w=>1/Math.sqrt(1+(w/1.5)**6)}],labels:[[3,1,'LPF','a']]}),''],[sk({w:220,xr:[0,4],yr:[0,1.3],yaxis:false,ticks:[[1.5,'ω0']],items:[{t:'fn',f:w=>w<1e-3?0:1/Math.sqrt(1+(1.5/w)**6)}],labels:[[0.6,1,'HPF','a']]}),''],[sk({w:220,xr:[0,4],yr:[0,1.3],yaxis:false,ticks:[[1.2,'ω1'],[2.6,'ω2']],items:[{t:'fn',f:w=>w<1e-3?0:1/Math.sqrt(1+((w*w-1.2*2.6)/(w*1.4))**6)}],labels:[[3.4,1,'BPF','a']]}),''],[sk({w:220,xr:[0,4],yr:[0,1.3],yaxis:false,ticks:[[1.2,'ω1'],[2.6,'ω2']],items:[{t:'fn',f:w=>{const d=1.2*2.6-w*w;return Math.abs(d)<1e-6?0:1/Math.sqrt(1+((w*1.4)/d)**6);}}],labels:[[3.4,0.6,'BSF','a']]}),''])},
+'6.4.2b':{idea:'Design = find G, ω<sub>0</sub> and the smallest N that fit the mask. Set the edges to equalities, divide to cancel ω<sub>0</sub>, and round N up.',
+ f:['G = G<sub>2</sub>','α = (G/G<sub>1</sub>)² − 1,   β = (G/δ<sub>s</sub>)² − 1','N ≥ ln(β/α) / (2·ln(ω<sub>s</sub>/ω<sub>p</sub>))  → round up','ω<sub>p</sub>α<sup>−1/2N</sup> ≤ ω<sub>0</sub> ≤ ω<sub>s</sub>β<sup>−1/2N</sup>'],
+ steps:['G = top of the passband limit.','Compute α (passband) and β (stopband).','N = ln(β/α)/(2 ln(ω<sub>s</sub>/ω<sub>p</sub>)), round UP.','Pick ω<sub>0</sub> in the allowed range. (HPF: use ω<sub>p</sub>/ω<sub>s</sub>.)','Example: 0.9 at 1000, 0.1 at 3000 → α = 0.2346, β = 99, N = 3, ω<sub>0</sub> ∈ [1273, 1395].'],
+ fig:()=>FIG([sk({xr:[0,5],yr:[0,1.3],yaxis:false,ticks:[[1,'1000'],[3,'3000']],items:[{t:'band',x0:0,x1:1,c:'k'},{t:'band',x0:3,x1:5,c:'w'},{t:'hl',y:0.9,x0:0,x1:1,c:'k'},{t:'hl',y:0.1,x0:3,x1:5,c:'w'},{t:'fn',f:w=>1/Math.sqrt(1+(w/1.33)**6)}],labels:[[0.5,0.78,'≥ 0.9','k'],[4,0.2,'≤ 0.1','w']]}),'N = 3 Butterworth with ω0 ≈ 1330 rad/s stays above 0.9 at 1000 and below 0.1 at 3000.'])},
+'6.5':{idea:'"Bandwidth" = how wide a spectrum is. There are four ways to measure it, and each gives a different number for the same signal.',
+ f:['absolute: highest frequency where |X| ≠ 0 (or ω<sub>2</sub> − ω<sub>1</sub>)','3 dB: where |X| = |X(0)|/√2  (RC: ω<sub>B</sub> = 1/RC)','noise-equivalent: ∫<sub>0</sub><sup>∞</sup>|X|²dω / |X(0)|²','RMS: √(∫ω²|X|²dω / ∫|X|²dω)  (ideal LPF: ω<sub>B</sub>/√3)'],
+ steps:['Baseband = centered at 0; bandpass = centered at ω<sub>c</sub>.','Read which measure the problem names, then use that formula.','If |X| never reaches 0 (like the RC filter), the absolute bandwidth is ∞.'],
+ fig:()=>FIG([sk({xr:[-0.2,5],yr:[0,1.25],ticks:[[1,'3 dB'],[1.571,'noise-eq.']],items:[{t:'fn',f:w=>1/(1+w*w),x0:0},{t:'rect',c0:0.785,w:0.785,h:1,c:'k',dash:1,lw:1.4},{t:'hl',y:0.5,c:'w',x0:0,x1:1},{t:'vl',x:1,c:'w',y0:0,y1:0.5}],labels:[[3.5,0.35,'|X(jω)|² (RC example)','a']]}),'The same spectrum gives different widths: 3 dB point, the flat box with equal area (noise-equivalent), and so on.'])}
+};
 const NOTES={
 '6.1':`
 <p>The opening of Chapter 6 (from Oppenheim &amp; Willsky): in many applications we want to change the relative amplitudes of the frequency components in a signal, or remove some of them entirely. This is <b>filtering</b>. For an LTI system the output spectrum is the input spectrum multiplied by the frequency response,</p>
@@ -406,6 +518,7 @@ const MORE={
 <p>x = e<sup>−t</sup>u(t): |x|² = e<sup>−2t</sup>, energy ½. t<sub>0</sub> = ∫te<sup>−2t</sup>/(½) = (¼)/(½) = ½. ∫(t − ½)²e<sup>−2t</sup>dt = ⅛, so τ = √(⅛/½) = ½.</p>
 <div class="trap"><b>Exam traps.</b> (1) Integrate |X|², not |X|, in NE and RMS. (2) Divide by |X(0)|² (squared peak). (3) 3 dB is where |X| = peak/√2, i.e. |X|² = peak²/2. (4) Bandpass: measure widths as ω<sub>2</sub> − ω<sub>1</sub> on the positive side only. (5) Modulating by cos ω<sub>c</sub>t doubles the absolute bandwidth (each copy carries both sidebands).</div>`
 };
+
 
 /* ---------- lessons ---------- */
 const L=[];
@@ -707,12 +820,21 @@ L.push({t:'Measures of Bandwidth',s:'6.5',k:'6.5',build(el){
    {q:'Multiply x(t) by cos(2πt). The new absolute bandwidth of the triangle signal is…',o:['2','4','2π','unchanged'],a:1,e:'Modulation moves the whole triangle (−2 to 2) out to ±2π, so each copy is 4 wide: bandwidth doubles.'}]));
 }});
 
+
 /* ---------- shell ---------- */
 let cur=0;
 function show(i){
   cur=i;const nav=$('#nav');nav.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-current',k===i));
   const m=$('#main');m.innerHTML='';const sec=document.createElement('section');sec.className='lesson';
-  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div><details class="notes" open><summary>From the notes · §${L[i].s}</summary>${NOTES[L[i].k]||''}${MORE[L[i].k]?'<h4 class="more">Going deeper: derivations, worked examples, exam traps</h4>'+MORE[L[i].k]:''}</details>`;
+  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null;
+  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div>`+
+  (K?`<div class="summary"><div class="kidea"><span class="tag">Big idea</span><p>${K.idea}</p></div>
+   <div class="sgrid"><div class="fbox"><h3>Formulas to know</h3><ul>${K.f.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+   <div class="howto"><h3>How to use it</h3><ol>${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol></div></div>
+   <div class="cpic"><h3>Picture it</h3>${K.fig()}</div></div>`:'')+
+  `<details class="notes"><summary>Full notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
+  (MORE[L[i].k]?`<details class="notes ex" open><summary>Worked examples &amp; exam traps</summary>${MORE[L[i].k]}</details>`:'')+
+  `<h3 class="tryh">Try it live</h3>`;
   const body=document.createElement('div');body.style.display='flex';body.style.flexDirection='column';body.style.gap='16px';sec.appendChild(body);m.appendChild(sec);
   L[i].build.call(L[i],body);
   const nr=document.createElement('div');nr.className='navrow';

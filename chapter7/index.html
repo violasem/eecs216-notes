@@ -80,6 +80,24 @@ h4.more{border-top:1px dashed var(--line);padding-top:12px;margin-top:18px;color
 .nx{background:var(--accent-soft);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:14px}
 code{font-family:var(--f-mono);font-size:13px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.summary{display:flex;flex-direction:column;gap:14px}
+.kidea{display:flex;gap:12px;align-items:flex-start;background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:8px;padding:12px 16px}
+.kidea p{margin:0;font-size:16.5px;line-height:1.5;max-width:76ch}
+.tag{flex:none;font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;background:var(--accent);color:var(--panel);border-radius:4px;padding:3px 7px;margin-top:3px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.fbox,.howto,.cpic{border:1px solid var(--line);border-radius:10px;padding:12px 16px;background:var(--bg)}
+.summary h3,.tryh{font-family:var(--f-display);font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin:0 0 8px}
+.tryh{margin:6px 0 -4px;font-size:15px;border-top:1px solid var(--line);padding-top:16px}
+.fbox ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.fbox li{font-family:var(--f-mono);font-size:13.5px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;overflow-x:auto}
+.howto ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+.figs{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end}
+.cfig{margin:0;min-width:0}
+.cfig svg{width:100%;height:auto;display:block;font-family:var(--f-body)}
+.cfig figcaption{font-size:13px;color:var(--muted);margin-top:4px;max-width:60ch}
+.notes.ex summary{color:var(--warn)}
+.notes p{margin:8px 0}
 .home{display:inline-block;margin-bottom:8px;color:var(--accent);text-decoration:none;font-weight:500}.home:hover{text-decoration:underline}
 :root{color-scheme:light}body{margin:0}
 </style>
@@ -88,7 +106,7 @@ code{font-family:var(--f-mono);font-size:13px}
 <div class="wrap">
 <header><a class="home" href="../">← All chapters</a>
   <h1>Chapter 7 AM Lab</h1>
-  <p>Follows your typeset notes section by section (7.1 → 7.6). Each page opens with the detailed notes for that section, including Example 7.1 and the sample-midterm AM problems, then a live plot you control and check questions.</p>
+  <p>Follows your typeset notes section by section (7.1 → 7.6). Each page starts with the big idea, formulas, a how-to and a concept picture, then the detailed notes, including Example 7.1 and the sample-midterm AM problems, then a live plot you control and check questions.</p>
 </header>
 <nav id="nav" aria-label="Sections"></nav>
 <main id="main"></main>
@@ -129,6 +147,89 @@ function quiz(id,items){
 }
 function updScore(){const v=Object.values(score);const el=$('#score');if(el)el.textContent=`${v.filter(Boolean).length} correct so far`;}
 
+/* ---------- concept figures (static SVG) ---------- */
+const COL={a:'var(--accent)',k:'var(--keep)',d:'var(--drop)',m:'var(--muted)',w:'var(--warn)',i:'var(--ink)'};
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function txt(x,y,s,o={}){return `<text x="${x}" y="${y}" text-anchor="${o.a||'middle'}" fill="${COL[o.c||'i']}" font-size="${o.fs||13}" ${o.it?'font-style="italic"':''} font-weight="${o.b?600:400}">${esc(s)}</text>`;}
+/* block diagram: items like 'x(t)' (signal label) or '[LPF]' (box). rows = array of item arrays */
+function chain(items,o={}){
+  const cells=items.map(s=>{const box=s[0]==='[';const t=box?s.slice(1,-1):s;return{box,t,w:Math.max(box?54:30,t.length*7.4+(box?22:6))};});
+  const gap=30,H=o.h||70,y=H/2;let x=8,out='';
+  cells.forEach((c,i)=>{
+    if(c.box){out+=`<rect x="${x}" y="${y-19}" width="${c.w}" height="38" rx="7" fill="var(--accent-soft)" stroke="${COL.a}" stroke-width="1.5"/>`+txt(x+c.w/2,y+5,c.t,{b:1});}
+    else out+=txt(x+c.w/2,y+5,c.t,{c:'a',b:1});
+    x+=c.w;
+    if(i<cells.length-1){out+=`<line x1="${x+3}" y1="${y}" x2="${x+gap-5}" y2="${y}" stroke="${COL.m}" stroke-width="1.6" marker-end="url(#ah)"/>`;x+=gap;}
+  });
+  if(o.note)out+=txt(x/2+4,H-4,o.note,{c:'m',fs:12});
+  return svg(x+8,H,out);
+}
+function svg(w,h,inner){return `<svg viewBox="0 0 ${w} ${h}" style="max-width:${w}px" role="img"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker><marker id="ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--accent)"/></marker></defs>${inner}</svg>`;}
+/* function / spectrum sketch */
+function sk(o){
+  const W=o.w||460,H=o.h||170,l=22,r=W-14,t=18,b=H-30;
+  const [x0,x1]=o.xr,[y0,y1]=o.yr||[0,1.2];
+  const X=x=>l+(x-x0)/(x1-x0)*(r-l),Y=y=>b-(y-y0)/(y1-y0)*(b-t);
+  let s='';
+  (o.items||[]).forEach(it=>{
+    const c=COL[it.c||'a'];
+    if(it.t==='band')s+=`<rect x="${X(it.x0)}" y="${t-6}" width="${X(it.x1)-X(it.x0)}" height="${b-t+6}" fill="${c}" opacity=".13"/>`+(it.lab?txt((X(it.x0)+X(it.x1))/2,t+4,it.lab,{c:it.c||'a',fs:11}):'');
+  });
+  s+=`<line x1="${l}" y1="${Y(0)}" x2="${r}" y2="${Y(0)}" stroke="${COL.m}" stroke-width="1.2" marker-end="url(#ah)"/>`;
+  if(o.yaxis!==false&&x0<=0&&x1>=0)s+=`<line x1="${X(0)}" y1="${b+4}" x2="${X(0)}" y2="${t-8}" stroke="${COL.m}" stroke-width="1.2" marker-end="url(#ah)"/>`;
+  s+=txt(r-2,Y(0)+18,o.xl||'ω',{c:'m',it:1,a:'end'});
+  (o.ticks||[]).forEach(([x,lab])=>{s+=`<line x1="${X(x)}" y1="${Y(0)-3}" x2="${X(x)}" y2="${Y(0)+3}" stroke="${COL.m}"/>`+txt(X(x),Y(0)+16,lab,{c:'m',fs:11});});
+  (o.items||[]).forEach(it=>{
+    const c=COL[it.c||'a'],lw=it.lw||2.4,d=it.dash?`stroke-dasharray="5 4"`:'';
+    if(it.t==='fn'){let p='';const n=it.n||300,a=it.x0??x0,e=it.x1??x1;for(let i=0;i<=n;i++){const x=a+(e-a)*i/n,v=it.f(x);p+=(i?'L':'M')+X(x).toFixed(1)+','+Y(Math.max(y0,Math.min(y1,v))).toFixed(1);}
+      if(it.fill)s+=`<path d="${p}L${X(e)},${Y(0)}L${X(a)},${Y(0)}z" fill="${c}" opacity=".18"/>`;
+      s+=`<path d="${p}" fill="none" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='tri'){const p=`M${X(it.c0-it.w)},${Y(0)}L${X(it.c0)},${Y(it.h)}L${X(it.c0+it.w)},${Y(0)}`;s+=`<path d="${p}z" fill="${c}" opacity=".2"/><path d="${p}" fill="none" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='rect'){s+=`<rect x="${X(it.c0-it.w)}" y="${Y(it.h)}" width="${X(it.c0+it.w)-X(it.c0-it.w)}" height="${Y(0)-Y(it.h)}" fill="${c}" fill-opacity=".18" stroke="${c}" stroke-width="${lw}" ${d}/>`;}
+    if(it.t==='imp'){s+=`<line x1="${X(it.x)}" y1="${Y(0)}" x2="${X(it.x)}" y2="${Y(it.h)}" stroke="${c}" stroke-width="2.4" marker-end="url(#ai)"/>`;}
+    if(it.t==='bar'){s+=`<line x1="${X(it.x)}" y1="${Y(0)}" x2="${X(it.x)}" y2="${Y(it.h)}" stroke="${c}" stroke-width="3"/><circle cx="${X(it.x)}" cy="${Y(it.h)}" r="3.5" fill="${c}"/>`;}
+    if(it.t==='hl'){s+=`<line x1="${X(it.x0??x0)}" y1="${Y(it.y)}" x2="${X(it.x1??x1)}" y2="${Y(it.y)}" stroke="${c}" stroke-width="1.2" stroke-dasharray="4 4"/>`;}
+    if(it.t==='vl'){s+=`<line x1="${X(it.x)}" y1="${Y(it.y0??y0)}" x2="${X(it.x)}" y2="${Y(it.y1??y1)}" stroke="${c}" stroke-width="1.2" stroke-dasharray="4 4"/>`;}
+    if(it.lab&&it.t!=='band'){const lx=it.lx??(it.x??it.c0??x0),ly=it.ly??((it.h??it.y??0)+(y1-y0)*0.08);s+=txt(X(lx),Y(ly)-2,it.lab,{c:it.c||'a',fs:12,b:1,a:it.la||'middle'});}
+    if(it.t==='arrow'){s+=`<line x1="${X(it.x0)}" y1="${Y(it.y0)}" x2="${X(it.x1)}" y2="${Y(it.y1)}" stroke="${c}" stroke-width="1.6" marker-end="url(#ah)"/>`;}
+  });
+  (o.labels||[]).forEach(([x,y,s2,c,a])=>{s+=txt(X(x),Y(y),s2,{c:c||'i',fs:12,a:a||'middle'});});
+  return svg(W,H,s);
+}
+const FIG=(...cells)=>`<div class="figs">${cells.map(([s,cap])=>`<figure class="cfig" style="flex:1 1 ${+(/viewBox="0 0 ([\d.]+)/.exec(s)||[0,300])[1]}px;max-width:${+(/viewBox="0 0 ([\d.]+)/.exec(s)||[0,300])[1]}px">${s}${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`).join('')}</div>`;
+/* ---------- summary cards ---------- */
+const tr7=(c0,h,lab,c,w=1)=>({t:'tri',c0,w,h,c,lab,lx:c0,ly:h+0.12});
+const KEY={
+'7.1':{idea:'Modulation = put a slow message x(t) onto a fast carrier cos(ω<sub>c</sub>t). We do it so antennas can be small, the signal travels well, and many stations can share the air.',
+ f:['λ = c/f  (c = 3×10⁸ m/s, f in Hz)','5 kHz audio → λ = 60 km;  1 MHz carrier → λ = 300 m','3 reasons: antenna size · propagation · multiple access'],
+ steps:['x(t) = message (slow), c(t) = carrier (fast), y(t) = modulated signal.','In AM, the carrier\'s amplitude follows x(t).'],
+ fig:()=>FIG([sk({xr:[0,10],yr:[-1.3,1.3],xl:'t',yaxis:false,items:[{t:'fn',f:t=>0.6+0.4*Math.sin(t*0.9),c:'k',lw:1.6,dash:1},{t:'fn',f:t=>-(0.6+0.4*Math.sin(t*0.9)),c:'k',lw:1.6,dash:1},{t:'fn',f:t=>(0.6+0.4*Math.sin(t*0.9))*Math.cos(t*14),n:1400,lw:1.4}]}),'AM: the fast carrier (blue) goes up and down with the slow message (green outline).'])},
+'7.2':{idea:'SC-AM multiplies the message by the carrier. In frequency, that copies the message spectrum to ±ω<sub>c</sub> at half height, so the bandwidth doubles.',
+ f:['y(t) = A·x(t)·cos(ω<sub>c</sub>t)','Y(jω) = (A/2)[X(j(ω − ω<sub>c</sub>)) + X(j(ω + ω<sub>c</sub>))]','bandwidth = 2ω<sub>B</sub>','tone: cos(ω<sub>m</sub>t)cos(ω<sub>c</sub>t) = ½cos((ω<sub>c</sub>−ω<sub>m</sub>)t) + ½cos((ω<sub>c</sub>+ω<sub>m</sub>)t)'],
+ steps:['Every frequency f in x moves to f<sub>c</sub> ± f.','Message 0…W → occupies f<sub>c</sub> − W … f<sub>c</sub> + W.','No impulse at ω<sub>c</sub> ("suppressed carrier").','Envelope = |x(t)|, so an envelope detector can\'t recover it.'],
+ fig:()=>FIG([sk({xr:[-6,6],yr:[0,1.35],ticks:[[-1,'−ωB'],[1,'ωB']],items:[tr7(0,1,'X(jω)','m')]}),'Before: message around 0.'],
+  [sk({xr:[-6,6],yr:[0,1.35],ticks:[[-4,'−ωc'],[4,'ωc']],items:[tr7(-4,.5,'A/2'),tr7(4,.5,'A/2'),{t:'band',x0:3,x1:4,c:'k',lab:'LSB'},{t:'band',x0:4,x1:5,c:'w',lab:'USB'}]}),'After ×cos ωct: two half-height copies; width 2ωB each.'])},
+'7.3':{idea:'To get the message back: multiply by the same cosine again (shifts it back to 0) and lowpass-filter away the extra copies at ±2ω<sub>c</sub>. The receiver\'s cosine must be in step: a phase error φ scales the output by cos φ.',
+ f:['z = B·x·cos²(ω<sub>c</sub>t) = (B/2)x + (B/2)x·cos(2ω<sub>c</sub>t)','after LPF: x̂(t) = (B/2)·x(t)','phase error: x̂ = (B/2)·cos φ·x(t)  (φ = 90° → 0)','cos A·cos B = ½[cos(A−B) + cos(A+B)]'],
+ steps:['Multiply r(t) by cos(ω<sub>c</sub>t).','Use cos² = (1 + cos 2θ)/2 → a term at 0 and a term at 2ω<sub>c</sub>.','LPF (cutoff ω<sub>B</sub>) keeps the term at 0.','Phase off by φ? Amplitude × cos φ, power × cos²φ.'],
+ fig:()=>FIG([chain(['r(t)','[× cos ωct]','z(t)','[LPF ωB]','x̂(t)'],{h:60}),'Coherent receiver.'],
+  [sk({xr:[-9,9],yr:[0,1.35],ticks:[[-8,'−2ωc'],[0,'0'],[8,'2ωc']],items:[{t:'band',x0:-1.3,x1:1.3,c:'k',lab:'LPF keeps'},tr7(0,1,'B/2','k'),tr7(-8,.5,'',  'w'),tr7(8,.5,'','w')],labels:[[-8,.75,'removed','w'],[8,.75,'removed','w']]}),'Spectrum of z(t): the message is back at 0; copies at ±2ωc are filtered out.'])},
+'7.4':{idea:'LC-AM adds a constant M so that M + x(t) is never negative. Then the envelope of y(t) is exactly M + x(t), and a cheap envelope detector replaces the in-step cosine. The price is wasted carrier power.',
+ f:['y(t) = A[M + x(t)]cos(ω<sub>c</sub>t),  M ≥ max|x(t)|','Y = AMπ[δ(ω−ω<sub>c</sub>) + δ(ω+ω<sub>c</sub>)] + (A/2)[X(j(ω−ω<sub>c</sub>)) + X(j(ω+ω<sub>c</sub>))]','P<sub>tot</sub> = (A²/2)(M² + P<sub>x</sub>);  carrier (AM)²/2 is wasted','tone: efficiency = μ²/(2 + μ²) ≤ 1/3'],
+ steps:['Check M ≥ max|x| (otherwise over-modulation).','Receiver: envelope detector → M + x(t) → DC block → x(t).','Power: P<sub>x</sub> of the message, then (A²/2)(M² + P<sub>x</sub>).','Sample P1: M = 1, P<sub>x</sub> = ½ → 3A²/4 = 9 → A = √12.'],
+ fig:()=>FIG([sk({xr:[0,10],yr:[-2.2,2.2],xl:'t',yaxis:false,items:[{t:'fn',f:t=>1.2+0.8*Math.sin(t*0.8),c:'k',lw:1.8,dash:1},{t:'fn',f:t=>(1.2+0.8*Math.sin(t*0.8))*Math.cos(t*13),n:1400,lw:1.3}],labels:[[8.6,2.05,'envelope = M + x(t)','k']]}),'With M large enough, the outline is the message itself.'],
+  [sk({xr:[-6,6],yr:[0,1.5],ticks:[[-4,'−ωc'],[4,'ωc']],items:[tr7(-4,.5,''),tr7(4,.5,''),{t:'imp',x:4,h:1.25,c:'w',lab:'AMπ (carrier)',ly:1.37},{t:'imp',x:-4,h:1.25,c:'w'}]}),'Spectrum: SC-AM plus carrier impulses (red). Same 2ωB bandwidth.'])},
+'7.5':{idea:'A superheterodyne radio shifts whichever station you want to one fixed intermediate frequency (IF), where one good fixed filter does the work. Danger: an "image" station 2f<sub>IF</sub> away also lands on the IF, so it is filtered out first.',
+ f:['low LO: f<sub>LO</sub> = |f<sub>c</sub> − f<sub>IF</sub>|  → image |f<sub>c</sub> − 2f<sub>IF</sub>|','high LO: f<sub>LO</sub> = f<sub>c</sub> + f<sub>IF</sub>  → image f<sub>c</sub> + 2f<sub>IF</sub>','image is always 2f<sub>IF</sub> from the desired station','AM band 540–1600 kHz, 10 kHz spacing, f<sub>IF</sub> = 455 kHz'],
+ steps:['Find f<sub>LO</sub> first (low or high, as told).','Image = f<sub>c</sub> ± 2f<sub>IF</sub> (same sign as the LO).','Image filter BEFORE the mixer; IF filter AFTER.','Sample P8: 720 kHz, IF 200, high LO → LO 920, image 1120, f<sub>abs</sub> &lt; 790.'],
+ fig:()=>FIG([chain(['r(t)','[image filter]','[× cos ωLOt]','[IF amp 455k]','[ED + DC block]','audio'],{h:60}),'Receiver chain.'],
+  [sk({xr:[0,14],yr:[0,1.45],yaxis:false,xl:'f',ticks:[[4,'fc'],[8,'fLO'],[12,'fimage']],items:[{t:'bar',x:4,h:1,c:'k',lab:'want'},{t:'bar',x:12,h:1,c:'w',lab:'image'},{t:'bar',x:8,h:.6,c:'m',lab:'LO'},{t:'arrow',x0:5,y0:.35,x1:7.6,y1:.35,c:'m'},{t:'arrow',x0:11,y0:.35,x1:8.4,y1:.35,c:'m'}],labels:[[6.3,.45,'fIF','m'],[9.7,.45,'fIF','m']]}),'Both the station and the image sit fIF away from the LO, so both would land on the IF.'])},
+'7.6':{idea:'SC-AM and LC-AM waste half the bandwidth (both sidebands carry the same info). QAM sends two messages on cos and sin in the same band; SSB throws one sideband away.',
+ f:['QAM: y = Ax<sub>1</sub>cos(ω<sub>c</sub>t) + Ax<sub>2</sub>sin(ω<sub>c</sub>t)','x̂<sub>1</sub> = (A/2)(x<sub>1</sub>cos φ − x<sub>2</sub>sin φ),  x̂<sub>2</sub> = (A/2)(x<sub>1</sub>sin φ + x<sub>2</sub>cos φ)','SINR<sub>1</sub> = P<sub>1</sub>cos²φ / (P<sub>2</sub>sin²φ + P<sub>N</sub>)','SSB: bandwidth ω<sub>B</sub> (half of AM)'],
+ steps:['QAM receiver: one branch × cos, one × sin, each then LPF.','φ = 0 → perfect separation; φ ≠ 0 → cross-talk.','SSB: modulate, BPF keeps one sideband, demodulate like SC-AM.'],
+ fig:()=>FIG([sk({w:230,xr:[0,8],yr:[0,1.35],yaxis:false,ticks:[[4,'ωc']],items:[tr7(4,.9,'x1 (cos)','a',1.4),tr7(4,.6,'x2 (sin)','k',1.4)]}),'QAM: two messages share one band.'],
+  [sk({w:230,xr:[0,8],yr:[0,1.35],yaxis:false,ticks:[[4,'ωc']],items:[{t:'fn',f:w=>w>=4&&w<=5.4?0.9*(1-(w-4)/1.4):0,fill:1},{t:'fn',f:w=>w<4&&w>=2.6?0.9*(1-(4-w)/1.4):0,c:'d',dash:1,lw:1.4}],labels:[[3.2,1.05,'cut','w'],[4.9,1.05,'USB kept','a']]}),'SSB: only one sideband is sent.'])}
+};
 const NOTES={
 '7.1':`
 <p>The process of <b>modulation</b> involves three signals:</p>
@@ -455,7 +556,15 @@ let cur=0;
 function show(i){
   cur=i;const nav=$('#nav');nav.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-current',k===i));
   const m=$('#main');m.innerHTML='';const sec=document.createElement('section');sec.className='lesson';
-  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div><details class="notes" open><summary>From the notes · §${L[i].s}</summary>${NOTES[L[i].k]||''}${MORE[L[i].k]?'<h4 class="more">Going deeper: derivations, worked examples, exam traps</h4>'+MORE[L[i].k]:''}</details>`;
+  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null;
+  sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div>`+
+  (K?`<div class="summary"><div class="kidea"><span class="tag">Big idea</span><p>${K.idea}</p></div>
+   <div class="sgrid"><div class="fbox"><h3>Formulas to know</h3><ul>${K.f.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+   <div class="howto"><h3>How to use it</h3><ol>${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol></div></div>
+   <div class="cpic"><h3>Picture it</h3>${K.fig()}</div></div>`:'')+
+  `<details class="notes"><summary>Full notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
+  (MORE[L[i].k]?`<details class="notes ex" open><summary>Worked examples &amp; exam traps</summary>${MORE[L[i].k]}</details>`:'')+
+  `<h3 class="tryh">Try it live</h3>`;
   const body=document.createElement('div');body.style.display='flex';body.style.flexDirection='column';body.style.gap='16px';sec.appendChild(body);m.appendChild(sec);
   L[i].build.call(L[i],body);
   const nr=document.createElement('div');nr.className='navrow';
