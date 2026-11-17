@@ -7,16 +7,10 @@
 <style>
 /* Layout: a bench instrument. Left rail of six lessons, right panel = one lesson: idea, live scope, check questions. */
 :root{
-  --bg:#f3f6f7; --panel:#ffffff; --ink:#14212b; --muted:#5b6b75; --line:#d5dee3;
-  --accent:#0f7c8c; --accent-soft:#dff1f3; --keep:#1f8a4c; --drop:#b9c4ca; --warn:#c2412d; --trace:#14212b; --grid:#e7edf0;
+  --bg:#ffffff; --panel:#ffffff; --ink:#1f2933; --muted:#5f6b76; --line:#e6e9ed;
+  --accent:#0f7c8c; --accent-soft:#dff1f3; --keep:#1f8a4c; --drop:#b9c4ca; --warn:#c2412d; --trace:#14212b; --grid:#eef1f4;
   --f-display:"Space Grotesk",system-ui,sans-serif; --f-body:"Inter",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0d1519; --panel:#142027; --ink:#e3ecef; --muted:#93a6af; --line:#24343c;
-  --accent:#43c2d1; --accent-soft:#16343a; --keep:#4fd08a; --drop:#3a4a52; --warn:#ff7a62; --trace:#e3ecef; --grid:#1c2a31; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0d1519; --panel:#142027; --ink:#e3ecef; --muted:#93a6af; --line:#24343c;
-  --accent:#43c2d1; --accent-soft:#16343a; --keep:#4fd08a; --drop:#3a4a52; --warn:#ff7a62; --trace:#e3ecef; --grid:#1c2a31; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
@@ -98,15 +92,43 @@ code{font-family:var(--f-mono);font-size:13px}
 .cfig figcaption{font-size:13px;color:var(--muted);margin-top:4px;max-width:60ch}
 .notes.ex summary{color:var(--warn)}
 .notes p{margin:8px 0}
+
+/* calm white reading layout */
+body{font-size:16px;line-height:1.7;color-scheme:light}
+.wrap{max-width:1120px;gap:40px;grid-template-columns:230px minmax(0,1fr)}
+header{border-bottom:1px solid var(--line);padding-bottom:14px}
+h1{font-size:26px}
+nav button{padding:7px 10px;font-size:14.5px;line-height:1.4}
+nav button[aria-current="true"]{background:var(--accent-soft);border-color:transparent;color:var(--ink)}
+.lesson{border:none;padding:4px 0 40px;gap:10px;background:transparent}
+.lesson h2{font-size:28px;margin-bottom:6px}
+.oneline{font-size:18px;line-height:1.6;color:var(--ink);margin:4px 0 8px;max-width:70ch;padding-left:14px;border-left:3px solid var(--accent)}
+.lesson h3.sh{font-family:var(--f-display);font-size:19px;margin:26px 0 6px;color:var(--ink);text-transform:none;letter-spacing:0}
+.lesson h3.sh span{color:var(--accent);margin-right:8px;font-family:var(--f-mono);font-size:15px}
+.talk{max-width:70ch}.talk p{margin:0 0 12px}.talk ul,.talk ol{margin:0 0 12px;padding-left:22px}.talk li{margin:4px 0}
+.flist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;max-width:70ch}
+.flist li{font-family:var(--f-mono);font-size:14.5px;background:#f6f7f9;border-radius:6px;padding:7px 12px;overflow-x:auto}
+.steps{max-width:70ch;padding-left:22px;margin:0}.steps li{margin:5px 0}
+.exbox{max-width:72ch;border:1px solid var(--line);border-radius:10px;padding:14px 18px}
+.exbox .q{font-weight:600;margin:0 0 8px}
+.exbox ol{margin:0 0 10px;padding-left:22px}.exbox li{margin:4px 0}
+.ans{display:inline-block;background:#e9f6ee;color:#1d5c37;border-radius:6px;padding:4px 12px;font-weight:600}
+.figs{margin-top:4px}
+.cfig figcaption{font-size:14px}
+details.notes{border:1px solid var(--line);border-radius:10px;background:#fafbfc;margin-top:18px;max-width:none}
+details.notes summary{font-size:16px}
+.notes.ex summary{color:var(--accent)}
+@media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr);gap:16px}}
+.tryh{text-transform:none;letter-spacing:0;font-size:19px;color:var(--ink);border-top:1px solid var(--line);padding-top:24px;margin-top:24px}
 .home{display:inline-block;margin-bottom:8px;color:var(--accent);text-decoration:none;font-weight:500}.home:hover{text-decoration:underline}
-:root{color-scheme:light}body{margin:0}
+body{margin:0}
 </style>
 
 </head><body>
 <div class="wrap">
 <header><a class="home" href="../">← All chapters</a>
   <h1>Chapter 6 Filter Lab</h1>
-  <p>Follows your typeset notes section by section (6.1 → 6.5). Each page starts with the big idea, the formulas, a how-to and a picture, then the full notes, worked examples, and a live plot.</p>
+  <p>Follows your typeset notes section by section (6.1 → 6.5). Each page explains the idea in plain words, shows a picture, lists the formulas, walks through a worked example, and ends with something to try yourself.</p>
 </header>
 <nav id="nav" aria-label="Sections"></nav>
 <main id="main"></main>
@@ -242,6 +264,67 @@ const KEY={
  f:['absolute: highest frequency where |X| ≠ 0 (or ω<sub>2</sub> − ω<sub>1</sub>)','3 dB: where |X| = |X(0)|/√2  (RC: ω<sub>B</sub> = 1/RC)','noise-equivalent: ∫<sub>0</sub><sup>∞</sup>|X|²dω / |X(0)|²','RMS: √(∫ω²|X|²dω / ∫|X|²dω)  (ideal LPF: ω<sub>B</sub>/√3)'],
  steps:['Baseband = centered at 0; bandpass = centered at ω<sub>c</sub>.','Read which measure the problem names, then use that formula.','If |X| never reaches 0 (like the RC filter), the absolute bandwidth is ∞.'],
  fig:()=>FIG([sk({xr:[-0.2,5],yr:[0,1.25],ticks:[[1,'3 dB'],[1.571,'noise-eq.']],items:[{t:'fn',f:w=>1/(1+w*w),x0:0},{t:'rect',c0:0.785,w:0.785,h:1,c:'k',dash:1,lw:1.4},{t:'hl',y:0.5,c:'w',x0:0,x1:1},{t:'vl',x:1,c:'w',y0:0,y1:0.5}],labels:[[3.5,0.35,'|X(jω)|² (RC example)','a']]}),'The same spectrum gives different widths: 3 dB point, the flat box with equal area (noise-equivalent), and so on.'])}
+};
+/* ---------- plain-language explanations ---------- */
+const PLAIN={
+'6.1':{talk:`<p>A <b>filter</b> is a volume knob that depends on frequency. Some frequencies come out at full volume, others come out silent.</p>
+<p>Every signal is a sum of waves at different frequencies (Ch 4). The filter looks at each wave on its own and multiplies it by H(jω) at that wave's frequency.</p>
+<p>An <b>ideal</b> filter is the simplest kind: each frequency is either kept (×1) or deleted (×0). The four types only differ in <i>which</i> frequencies they keep:</p>
+<ul><li><b>Lowpass (LPF):</b> keeps the slow waves, below the cutoff.</li><li><b>Highpass (HPF):</b> keeps the fast waves, above the cutoff.</li><li><b>Bandpass (BPF):</b> keeps one band in the middle.</li><li><b>Bandstop (BSF):</b> removes one band, keeps the rest.</li></ul>
+<p>DC (the constant part, frequency 0) passes an LPF but never passes an HPF or BPF.</p>`,
+ex:{q:'x(t) = 2 + 3cos(10t) + cos(50t) goes into an ideal LPF with cutoff 20. Find y(t) and its power.',
+ s:['Frequencies in x: 0 (the 2), 10, and 50.','Compare each with 20: 0 ✓ keep, 10 ✓ keep, 50 ✗ delete.','y(t) = 2 + 3cos(10t).','Power = 2² + 3²/2 = 4 + 4.5 = 8.5.'],a:'y(t) = 2 + 3cos(10t), P = 8.5'}},
+'6.2a':{talk:`<p>Two questions: what does the <b>phase</b> of a filter do, and why can't we build the perfect "wall" filter?</p>
+<p><b>Phase = delay.</b> If the phase is a straight line, ∠H = −ωt<sub>d</sub>, every frequency is delayed by the same t<sub>d</sub> seconds. The signal comes out the same shape, just later. That's harmless. If the phase is curved, different frequencies get delayed by different amounts and the shape gets distorted.</p>
+<p><b>Why the wall is impossible.</b> The impulse response of the ideal LPF is a sinc, and a sinc has wiggles on <i>both</i> sides of its center, including before t = 0. That would mean the filter reacts <i>before</i> the input arrives. Real circuits can't see the future, so the ideal filter is "non-causal" and can't be built.</p>
+<p>Conclusion: real filters must have a gentle slope instead of a cliff. That's the rest of the chapter.</p>`,
+ex:{q:'H(jω) = 3e<sup>−j0.5ω</sup> for |ω| &lt; 10. The input is bandlimited to |ω| &lt; 10. What is y(t)?',
+ s:['|H| = 3 → every frequency is multiplied by 3.','∠H = −0.5ω → a straight line, so a pure delay of 0.5 s.','So the shape doesn\'t change: y(t) = 3x(t − 0.5).'],a:'y(t) = 3x(t − 0.5)'}},
+'6.2b':{talk:`<p>Since a perfect wall is impossible, a real filter spec says "close enough". It uses three zones:</p>
+<ul><li><b>Passband</b> (below ω<sub>p</sub>): gain must stay near 1, within ±δ<sub>1</sub>.</li><li><b>Stopband</b> (above ω<sub>s</sub>): gain must stay below a small number δ<sub>2</sub>.</li><li><b>Transition band</b> (between ω<sub>p</sub> and ω<sub>s</sub>): no rule at all. This is where the slope goes.</li></ul>
+<p>The narrower the transition band, or the stricter the δ's, the steeper the slope has to be. A steeper slope needs a more complicated (higher-order) filter.</p>
+<p>Exam words to translate: "40 dB down" means gain ≤ 10<sup>−40/20</sup> = 0.01. Frequencies in Hz must be multiplied by 2π to get rad/s.</p>`,
+ex:{q:'"Gain between 0.95 and 1.05 up to 2 kHz, at least 40 dB down above 8 kHz." Write the spec numbers.',
+ s:['Passband: δ<sub>1</sub> = 0.05, ω<sub>p</sub> = 2π·2000 ≈ 12,566 rad/s.','40 dB down → δ<sub>2</sub> = 10<sup>−2</sup> = 0.01.','ω<sub>s</sub> = 2π·8000 ≈ 50,265 rad/s.'],a:'δ₁ = 0.05, ωp = 2π·2000, δ₂ = 0.01, ωs = 2π·8000'}},
+'6.2c':{talk:`<p>The <b>RC circuit</b> is the simplest real lowpass filter: a resistor followed by a capacitor, output taken across the capacitor.</p>
+<p><b>Why it filters:</b> the capacitor is like a bucket filled through a thin hose (the resistor). A slow input gives the bucket time to fill and empty, so the output follows the input. A fast input flips before the bucket can fill, so the output barely moves. Slow passes, fast is blocked.</p>
+<p><b>Everything depends on one number:</b> r = ω·RC (how fast the input is compared with the bucket).</p>
+<ul><li>r small → gain ≈ 1 (0 dB), phase ≈ 0°.</li><li>r = 1 (the <b>corner</b>, ω = 1/RC) → gain 0.707 (−3 dB), phase −45°.</li><li>r big → gain drops 10× for every 10× in frequency (−20 dB/decade), phase → −90°.</li></ul>
+<p>A <b>Bode plot</b> just draws this: gain in dB and phase, against frequency on a log scale.</p>`,
+ex:{q:'RC = 0.001 and x(t) = cos(2000t). Find y(t).',
+ s:['r = ω·RC = 2000 × 0.001 = 2.','|H| = 1/√(1 + 2²) = 1/√5 ≈ 0.447 (that\'s −7 dB).','∠H = −arctan(2) ≈ −63.4°.','y(t) = 0.447·cos(2000t − 63.4°).'],a:'y(t) ≈ 0.447 cos(2000t − 63.4°)'}},
+'6.3':{talk:`<p>This section is just "let MATLAB draw the Bode plot for you".</p>
+<p>Write H as a fraction of two polynomials in s, where <b>s means jω</b>. Then list the coefficients of the top (N) and the bottom (D), from the highest power down, and run <code>bode(N, D)</code>.</p>
+<p>The one trick: (jω)² = −ω², so a term like "10<sup>10</sup> − ω²" in the denominator is really s² + 10<sup>10</sup>. Every power must appear in the list; use 0 for a missing one.</p>`,
+ex:{q:'H(jω) = 10 / ((jω)² + 3jω + 10). What are N and D?',
+ s:['Replace jω by s: H = 10 / (s² + 3s + 10).','Top: just the constant 10 → N = [10].','Bottom: s² + 3s + 10 → D = [1 3 10].'],a:'N = [10], D = [1 3 10], then bode(N, D)'}},
+'6.4':{talk:`<p>How do engineers actually design a filter? They don't start from scratch every time.</p>
+<p>They keep <b>one standard lowpass filter</b>, the <b>Butterworth prototype</b>, with cutoff 1 rad/s. Then they:</p>
+<ol><li>pick how steep it needs to be (the <b>order N</b>),</li><li>stretch it to the right cutoff, or flip it into a highpass/bandpass/bandstop (section 6.4.2).</li></ol>
+<p>The Butterworth's poles sit evenly spaced on a half-circle. You don't need to draw them often; the important formulas are N = 1: 1/(jω + 1) and N = 2: 1/((jω)² + √2·jω + 1).</p>`,
+ex:{q:'Write the N = 2 Butterworth prototype and its gain at ω = 1.',
+ s:['H = 1 / ((jω)² + √2·jω + 1).','At ω = 1: denominator = −1 + √2 j + 1 = √2 j.','|H| = 1/√2 → −3 dB, as for every Butterworth at its cutoff.'],a:'|H(j1)| = 1/√2 (−3 dB)'}},
+'6.4.1':{talk:`<p>The Butterworth gain has one simple formula: |H| = 1/√(1 + ω<sup>2N</sup>).</p>
+<ul><li>At ω = 0: gain 1. At the cutoff ω = 1: always 1/√2 (−3 dB), for <i>any</i> N.</li><li><b>Bigger N</b> → flatter top and steeper drop (−20N dB per decade). It gets closer to the ideal wall.</li><li><b>No bump.</b> It's called "maximally flat". (A second-order filter with less damping would show a bump near the cutoff; Butterworth is exactly the no-bump case, ζ = 0.707.)</li></ul>
+<p>To build it: N = 1 is an RC filter, N = 2 is one op-amp stage, larger N means you chain stages.</p>`,
+ex:{q:'Butterworth N = 3, cutoff 1. What is the gain in dB at ω = 10?',
+ s:['|H| = 1/√(1 + 10<sup>6</sup>) ≈ 1/1000 = 0.001.','dB = 20·log<sub>10</sub>(0.001) = −60 dB.','Check: −20N = −60 dB per decade after the corner ✓.'],a:'−60 dB'}},
+'6.4.2a':{talk:`<p>Same prototype, different jobs. You only <b>swap what ω means</b> inside 1/√(1 + ω<sup>2N</sup>):</p>
+<ul><li><b>LPF with cutoff ω<sub>0</sub>:</b> use ω/ω<sub>0</sub>. This slides the corner from 1 to ω<sub>0</sub>.</li><li><b>HPF:</b> use ω<sub>0</sub>/ω. Low frequencies now give a huge number (blocked), high frequencies give a small number (pass). It flips the filter.</li><li><b>BPF / BSF:</b> a fancier swap that maps a band [ω<sub>1</sub>, ω<sub>2</sub>] onto the prototype. The center of the band is √(ω<sub>1</sub>ω<sub>2</sub>).</li></ul>
+<p>G in front just sets the passband height.</p>`,
+ex:{q:'HPF, N = 1, ω<sub>0</sub> = 100, G = 1. Gain at ω = 10 and ω = 1000?',
+ s:['|H| = 1/√(1 + (ω<sub>0</sub>/ω)²).','ω = 10: ratio 10 → 1/√101 ≈ 0.0995 (blocked).','ω = 1000: ratio 0.1 → 1/√1.01 ≈ 0.995 (passes).'],a:'≈ 0.1 at ω = 10, ≈ 1 at ω = 1000'}},
+'6.4.2b':{talk:`<p>The design question: <b>what's the smallest N</b> that meets the spec?</p>
+<p>Think of it as "how steep does the slope need to be?" The closer ω<sub>s</sub> is to ω<sub>p</sub>, the steeper the drop must be, so the bigger N.</p>
+<ol><li>G = the top of the allowed passband.</li><li>α = (G/G<sub>1</sub>)² − 1 (how much you may drop in the passband).</li><li>β = (G/δ<sub>s</sub>)² − 1 (how much you must drop in the stopband).</li><li>N ≥ ln(β/α) / (2 ln(ω<sub>s</sub>/ω<sub>p</sub>)), then <b>round up</b> (N must be a whole number).</li><li>Pick ω<sub>0</sub> in the allowed range.</li></ol>
+<p>For a highpass, swap ω<sub>s</sub>/ω<sub>p</sub> to ω<sub>p</sub>/ω<sub>s</sub>.</p>`,
+ex:{q:'G = 1, gain ≥ 0.9 at 1000 rad/s, ≤ 0.1 at 3000 rad/s. Find N.',
+ s:['α = (1/0.9)² − 1 = 0.2346.','β = (1/0.1)² − 1 = 99.','β/α = 422 → ln 422 = 6.045.','2·ln(3000/1000) = 2·1.0986 = 2.197.','N ≥ 6.045/2.197 = 2.75 → round up.'],a:'N = 3'}},
+'6.5':{talk:`<p>"How wide is this spectrum?" sounds simple, but there are four different rulers, and each gives a different number:</p>
+<ul><li><b>Absolute:</b> where the spectrum becomes exactly zero. (If it never does, it's ∞.)</li><li><b>3 dB:</b> where the height falls to peak ÷ √2 ≈ 70.7%.</li><li><b>Noise-equivalent:</b> replace |X|² by a flat box of the same height at 0 and the same area. Its width is the bandwidth.</li><li><b>RMS:</b> how spread out |X|² is, like a standard deviation.</li></ul>
+<p>Baseband = spectrum centered at 0. Bandpass = spectrum centered at some ω<sub>c</sub> (then you measure ω<sub>2</sub> − ω<sub>1</sub>).</p>`,
+ex:{q:'X(jω) = 2 − |ω| for |ω| &lt; 2 (sample P6). Absolute and 3-dB bandwidth?',
+ s:['Absolute: X reaches 0 at ω = 2 → 2 rad/s.','3 dB: peak is 2, target 2/√2 = √2.','Solve 2 − ω = √2 → ω = 2 − √2 ≈ 0.59 rad/s.'],a:'absolute 2, 3-dB ≈ 0.59 rad/s'}}
 };
 const NOTES={
 '6.1':`
@@ -826,15 +909,18 @@ let cur=0;
 function show(i){
   cur=i;const nav=$('#nav');nav.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-current',k===i));
   const m=$('#main');m.innerHTML='';const sec=document.createElement('section');sec.className='lesson';
-  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null;
+  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null, P=(typeof PLAIN!=='undefined'&&PLAIN[L[i].k])||null;
+  let n=0;const H=t=>`<h3 class="sh"><span>${++n}</span>${t}</h3>`;
   sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div>`+
-  (K?`<div class="summary"><div class="kidea"><span class="tag">Big idea</span><p>${K.idea}</p></div>
-   <div class="sgrid"><div class="fbox"><h3>Formulas to know</h3><ul>${K.f.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-   <div class="howto"><h3>How to use it</h3><ol>${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol></div></div>
-   <div class="cpic"><h3>Picture it</h3>${K.fig()}</div></div>`:'')+
-  `<details class="notes"><summary>Full notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
-  (MORE[L[i].k]?`<details class="notes ex" open><summary>Worked examples &amp; exam traps</summary>${MORE[L[i].k]}</details>`:'')+
-  `<h3 class="tryh">Try it live</h3>`;
+  (K?`<p class="oneline">${K.idea}</p>`:'')+
+  (P?H('Explained simply')+`<div class="talk">${P.talk}</div>`:'')+
+  (K?H('Picture it')+K.fig():'')+
+  (K?H('Formulas you need')+`<ul class="flist">${K.f.map(x=>`<li>${x}</li>`).join('')}</ul>`:'')+
+  (K?H('How to solve a problem')+`<ol class="steps">${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol>`:'')+
+  (P&&P.ex?H('Worked example')+`<div class="exbox"><p class="q">${P.ex.q}</p><ol>${P.ex.s.map(x=>`<li>${x}</li>`).join('')}</ol><span class="ans">Answer: ${P.ex.a}</span></div>`:'')+
+  (MORE[L[i].k]?`<details class="notes ex"><summary>More examples &amp; exam traps (tap to open)</summary>${MORE[L[i].k]}</details>`:'')+
+  `<details class="notes"><summary>Full class notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
+  `<h3 class="tryh">Try it yourself</h3>`;
   const body=document.createElement('div');body.style.display='flex';body.style.flexDirection='column';body.style.gap='16px';sec.appendChild(body);m.appendChild(sec);
   L[i].build.call(L[i],body);
   const nr=document.createElement('div');nr.className='navrow';

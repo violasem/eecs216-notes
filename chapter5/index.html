@@ -7,16 +7,10 @@
 <style>
 /* Layout: a bench instrument. Left rail of six lessons, right panel = one lesson: idea, live scope, check questions. */
 :root{
-  --bg:#f3f6f7; --panel:#ffffff; --ink:#14212b; --muted:#5b6b75; --line:#d5dee3;
-  --accent:#2e7d32; --accent-soft:#e3f2e4; --keep:#1f8a4c; --drop:#b9c4ca; --warn:#c2412d; --trace:#14212b; --grid:#e7edf0;
+  --bg:#ffffff; --panel:#ffffff; --ink:#1f2933; --muted:#5f6b76; --line:#e6e9ed;
+  --accent:#2e7d32; --accent-soft:#e3f2e4; --keep:#1f8a4c; --drop:#b9c4ca; --warn:#c2412d; --trace:#14212b; --grid:#eef1f4;
   --f-display:"Space Grotesk",system-ui,sans-serif; --f-body:"Inter",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0d1519; --panel:#142027; --ink:#e3ecef; --muted:#93a6af; --line:#24343c;
-  --accent:#6fd27a; --accent-soft:#17331b; --keep:#4fd08a; --drop:#3a4a52; --warn:#ff7a62; --trace:#e3ecef; --grid:#1c2a31; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0d1519; --panel:#142027; --ink:#e3ecef; --muted:#93a6af; --line:#24343c;
-  --accent:#6fd27a; --accent-soft:#17331b; --keep:#4fd08a; --drop:#3a4a52; --warn:#ff7a62; --trace:#e3ecef; --grid:#1c2a31; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
@@ -98,15 +92,43 @@ code{font-family:var(--f-mono);font-size:13px}
 .cfig figcaption{font-size:13px;color:var(--muted);margin-top:4px;max-width:60ch}
 .notes.ex summary{color:var(--warn)}
 .notes p{margin:8px 0}
+
+/* calm white reading layout */
+body{font-size:16px;line-height:1.7;color-scheme:light}
+.wrap{max-width:1120px;gap:40px;grid-template-columns:230px minmax(0,1fr)}
+header{border-bottom:1px solid var(--line);padding-bottom:14px}
+h1{font-size:26px}
+nav button{padding:7px 10px;font-size:14.5px;line-height:1.4}
+nav button[aria-current="true"]{background:var(--accent-soft);border-color:transparent;color:var(--ink)}
+.lesson{border:none;padding:4px 0 40px;gap:10px;background:transparent}
+.lesson h2{font-size:28px;margin-bottom:6px}
+.oneline{font-size:18px;line-height:1.6;color:var(--ink);margin:4px 0 8px;max-width:70ch;padding-left:14px;border-left:3px solid var(--accent)}
+.lesson h3.sh{font-family:var(--f-display);font-size:19px;margin:26px 0 6px;color:var(--ink);text-transform:none;letter-spacing:0}
+.lesson h3.sh span{color:var(--accent);margin-right:8px;font-family:var(--f-mono);font-size:15px}
+.talk{max-width:70ch}.talk p{margin:0 0 12px}.talk ul,.talk ol{margin:0 0 12px;padding-left:22px}.talk li{margin:4px 0}
+.flist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;max-width:70ch}
+.flist li{font-family:var(--f-mono);font-size:14.5px;background:#f6f7f9;border-radius:6px;padding:7px 12px;overflow-x:auto}
+.steps{max-width:70ch;padding-left:22px;margin:0}.steps li{margin:5px 0}
+.exbox{max-width:72ch;border:1px solid var(--line);border-radius:10px;padding:14px 18px}
+.exbox .q{font-weight:600;margin:0 0 8px}
+.exbox ol{margin:0 0 10px;padding-left:22px}.exbox li{margin:4px 0}
+.ans{display:inline-block;background:#e9f6ee;color:#1d5c37;border-radius:6px;padding:4px 12px;font-weight:600}
+.figs{margin-top:4px}
+.cfig figcaption{font-size:14px}
+details.notes{border:1px solid var(--line);border-radius:10px;background:#fafbfc;margin-top:18px;max-width:none}
+details.notes summary{font-size:16px}
+.notes.ex summary{color:var(--accent)}
+@media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr);gap:16px}}
+.tryh{text-transform:none;letter-spacing:0;font-size:19px;color:var(--ink);border-top:1px solid var(--line);padding-top:24px;margin-top:24px}
 .home{display:inline-block;margin-bottom:8px;color:var(--accent);text-decoration:none;font-weight:500}.home:hover{text-decoration:underline}
-:root{color-scheme:light}body{margin:0}
+body{margin:0}
 </style>
 
 </head><body>
 <div class="wrap">
 <header><a class="home" href="../">← All chapters</a>
   <h1>Chapter 5 Fourier Transform Lab</h1>
-  <p>Follows your typeset notes section by section (5.1 → 5.3.11). Each page starts with the big idea, formulas, a how-to and a concept picture, then the detailed notes, including Examples 5.1–5.10, then a live plot you control and check questions.</p>
+  <p>Follows your typeset notes section by section (5.1 → 5.3.11). Each page explains the idea in plain words, shows a picture, lists the formulas and walks through a worked example, then the full class notes, including Examples 5.1–5.10, then a live plot you control and check questions.</p>
 </header>
 <nav id="nav" aria-label="Sections"></nav>
 <main id="main"></main>
@@ -230,6 +252,38 @@ const KEY={
  f:['E = ∫|x(t)|²dt = (1/2π)∫|X(jω)|²dω','ESD = (1/2π)|X(jω)|²','e<sup>−at</sup>u(t): E = 1/(2a); fraction in |ω| &lt; W = (2/π)tan<sup>−1</sup>(W/a)'],
  steps:['Total energy: integrate |x|² in time (usually easier).','Energy in a band: (1/2π)∫ over that band of |X|², times 2 for ± sides.','Ex 5.10: e<sup>−2t</sup>u: E = ¼, half of it in |ω| &lt; 2.'],
  fig:()=>FIG([sk({xr:[-10,10],yr:[0,0.3],ticks:[[-2,'−a'],[2,'a']],items:[{t:'fn',f:w=>1/(4+w*w),fill:1,x0:-2,x1:2,c:'k'},{t:'fn',f:w=>1/(4+w*w)}],labels:[[0,0.27,'50% of energy','k']]}),'|X|² of e^(−2t)u(t): exactly half the energy is inside |ω| &lt; a.'])}
+};
+/* ---------- plain-language explanations ---------- */
+const PLAIN={
+'5.1':{talk:`<p>Chapter 4 handled signals that repeat. Chapter 5 handles signals that <b>don't</b> repeat, like a single pulse.</p>
+<p>Imagine the repeat time T<sub>0</sub> getting longer and longer. The harmonic lines (spaced 2π/T<sub>0</sub> apart) get closer and closer until they merge into a smooth curve. That curve is the <b>Fourier transform</b> X(jω): how much of each frequency is in the signal.</p>
+<ul><li>Forward: X(jω) = ∫ x(t)e<sup>−jωt</sup>dt</li><li>Backward: x(t) = (1/2π)∫ X(jω)e<sup>jωt</sup>dω (the 1/2π is on this side)</li></ul>
+<p>Handy check: X(0) = the area under x(t).</p>`,
+ex:{q:'x(t) = e<sup>−2t</sup> for t ≥ 0 (0 before). Find X(jω).',s:['X = ∫<sub>0</sub><sup>∞</sup> e<sup>−2t</sup>e<sup>−jωt</sup>dt = ∫<sub>0</sub><sup>∞</sup> e<sup>−(2+jω)t</sup>dt.','= 1/(2 + jω).','Check: X(0) = ½ = area of e<sup>−2t</sup> ✓.'],a:'X(jω) = 1/(2 + jω)'}},
+'5.2':{talk:`<p>Nobody integrates every time. You memorize a few <b>pairs</b> (signal ↔ spectrum) and combine them with properties (next sections).</p>
+<p>The most important pairs:</p>
+<ul><li>e<sup>−at</sup>u(t) ↔ 1/(a + jω)</li><li>rectangle pulse ↔ sinc</li><li>sin(Wt)/(πt) ↔ box: 1 for |ω| &lt; W</li><li>cos(ω<sub>0</sub>t) ↔ two spikes at ±ω<sub>0</sub></li><li>constant 1 ↔ a spike at 0</li></ul>
+<p><b>Key intuition:</b> narrow in time ↔ wide in frequency. A short pulse contains many frequencies. A signal limited to a band of frequencies lasts forever in time.</p>`,
+ex:{q:'Sample P3: X(jω) = 1 for |ω| &lt; 1, 0 otherwise. What is x(π)?',s:['From the pair: box of width W = 1 ↔ sin(t)/(πt).','x(π) = sin(π)/(π·π) = 0.'],a:'x(π) = 0'}},
+'5.3a':{talk:`<p>Properties let you get new pairs without integrating:</p>
+<ul><li><b>Linearity:</b> add signals → add spectra.</li><li><b>Time shift:</b> delaying the signal by t<sub>0</sub> doesn't change |X| at all. It only adds a phase −ωt<sub>0</sub>.</li><li><b>Scaling:</b> squeeze the signal in time (x(2t)) → its spectrum gets wider and shorter.</li><li><b>Duality:</b> if x(t) ↔ X(jω), then X(jt) ↔ 2πx(−ω). Swap the roles and get a free new pair.</li><li><b>Real signal:</b> |X| is symmetric, the phase is anti-symmetric.</li></ul>`,
+ex:{q:'e<sup>−t</sup>u(t) ↔ 1/(1 + jω). What is the transform of e<sup>−(t−3)</sup>u(t − 3)?',s:['It\'s the same signal delayed by 3.','Delay → multiply by e<sup>−jω·3</sup>.'],a:'e^(−j3ω)/(1 + jω)'}},
+'5.3b':{talk:`<p><b>Multiplying by a cosine moves the spectrum.</b> x(t)·cos(ω<sub>0</sub>t) makes two copies of X, one centered at +ω<sub>0</sub> and one at −ω<sub>0</sub>, each half as tall.</p>
+<p>This one property is the whole basis of AM radio (Ch 7).</p>
+<p>Because each copy has the full width of X, the total band occupied doubles.</p>`,
+ex:{q:'Sample P6(b): X = 2 − |ω| for |ω| &lt; 2. Bandwidth of x(t)cos(2πt)?',s:['Copies centered at ±2π, height 1.','Each copy spans 2π − 2 to 2π + 2.','Width = 4.'],a:'absolute bandwidth 4 (not 2)'}},
+'5.3c':{talk:`<p>The big shortcut: <b>convolution in time = multiplication in frequency.</b></p>
+<p>For a filter (LTI system), y = x * h is hard, but Y = H·X is easy. So:</p>
+<ol><li>transform the input and the system,</li><li>multiply,</li><li>split into simple fractions (partial fractions),</li><li>turn each fraction back with e<sup>−at</sup>u ↔ 1/(a + jω).</li></ol>
+<p>Two more: differentiating in time multiplies by jω; multiplying by t takes a derivative in ω.</p>`,
+ex:{q:'Sample P7: H = 1/(jω + 6), output y = e<sup>−5t</sup>u − e<sup>−6t</sup>u. Find x(t).',s:['Y = 1/(5 + jω) − 1/(6 + jω) = 1/((5 + jω)(6 + jω)).','X = Y/H = Y·(6 + jω) = 1/(5 + jω).','Back to time: e<sup>−5t</sup>u(t).'],a:'x(t) = e^(−5t)u(t)'}},
+'5.3d':{talk:`<p>The flip side: <b>multiplication in time = convolution in frequency</b> (with a 1/2π).</p>
+<p>Main use: <b>windowing</b>. If you only observe a cosine for T seconds (multiply by a box), its two clean spikes get smeared into sinc-shaped bumps. A longer window gives sharper bumps (width about 2π/T).</p>`,
+ex:{q:'You record cos(100t) for T = 1 s. Where are the first zeros of the spectrum bump at +100?',s:['Bump half-width = 2π/T = 2π ≈ 6.28.'],a:'at about 93.7 and 106.3 rad/s'}},
+'5.3e':{talk:`<p><b>Parseval:</b> you can compute energy in time or in frequency and get the same answer.</p>
+<p>E = ∫|x(t)|²dt = (1/2π)∫|X(jω)|²dω</p>
+<p>|X|² tells you <b>where the energy lives</b> in frequency. To find the fraction of energy in a band, take the area of |X|² inside the band divided by the total area. The 1/2π cancels in the fraction.</p>`,
+ex:{q:'Sample P6(d): X = 2 − |ω| for |ω| &lt; 2. What fraction of the energy is in |ω| ≤ 1?',s:['Total: 2∫<sub>0</sub><sup>2</sup>(2 − ω)²dω = 2·8/3 = 16/3.','Band: 2∫<sub>0</sub><sup>1</sup>(2 − ω)²dω = 2·7/3 = 14/3.','Fraction = 14/16.'],a:'7/8 (choice d)'}}
 };
 const NOTES={
 '5.1':`
@@ -553,15 +607,18 @@ let cur=0;
 function show(i){
   cur=i;const nav=$('#nav');nav.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-current',k===i));
   const m=$('#main');m.innerHTML='';const sec=document.createElement('section');sec.className='lesson';
-  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null;
+  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null, P=(typeof PLAIN!=='undefined'&&PLAIN[L[i].k])||null;
+  let n=0;const H=t=>`<h3 class="sh"><span>${++n}</span>${t}</h3>`;
   sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div>`+
-  (K?`<div class="summary"><div class="kidea"><span class="tag">Big idea</span><p>${K.idea}</p></div>
-   <div class="sgrid"><div class="fbox"><h3>Formulas to know</h3><ul>${K.f.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-   <div class="howto"><h3>How to use it</h3><ol>${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol></div></div>
-   <div class="cpic"><h3>Picture it</h3>${K.fig()}</div></div>`:'')+
-  `<details class="notes"><summary>Full notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
-  (MORE[L[i].k]?`<details class="notes ex" open><summary>Worked examples &amp; exam traps</summary>${MORE[L[i].k]}</details>`:'')+
-  `<h3 class="tryh">Try it live</h3>`;
+  (K?`<p class="oneline">${K.idea}</p>`:'')+
+  (P?H('Explained simply')+`<div class="talk">${P.talk}</div>`:'')+
+  (K?H('Picture it')+K.fig():'')+
+  (K?H('Formulas you need')+`<ul class="flist">${K.f.map(x=>`<li>${x}</li>`).join('')}</ul>`:'')+
+  (K?H('How to solve a problem')+`<ol class="steps">${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol>`:'')+
+  (P&&P.ex?H('Worked example')+`<div class="exbox"><p class="q">${P.ex.q}</p><ol>${P.ex.s.map(x=>`<li>${x}</li>`).join('')}</ol><span class="ans">Answer: ${P.ex.a}</span></div>`:'')+
+  (MORE[L[i].k]?`<details class="notes ex"><summary>More examples &amp; exam traps (tap to open)</summary>${MORE[L[i].k]}</details>`:'')+
+  `<details class="notes"><summary>Full class notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
+  `<h3 class="tryh">Try it yourself</h3>`;
   const body=document.createElement('div');body.style.display='flex';body.style.flexDirection='column';body.style.gap='16px';sec.appendChild(body);m.appendChild(sec);
   L[i].build.call(L[i],body);
   const nr=document.createElement('div');nr.className='navrow';

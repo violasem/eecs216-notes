@@ -7,16 +7,10 @@
 <style>
 /* Layout: a bench instrument. Left rail of six lessons, right panel = one lesson: idea, live scope, check questions. */
 :root{
-  --bg:#f3f6f7; --panel:#ffffff; --ink:#14212b; --muted:#5b6b75; --line:#d5dee3;
-  --accent:#b5541c; --accent-soft:#f8e8dd; --keep:#1f8a4c; --drop:#b9c4ca; --warn:#c2412d; --trace:#14212b; --grid:#e7edf0;
+  --bg:#ffffff; --panel:#ffffff; --ink:#1f2933; --muted:#5f6b76; --line:#e6e9ed;
+  --accent:#b5541c; --accent-soft:#f8e8dd; --keep:#1f8a4c; --drop:#b9c4ca; --warn:#c2412d; --trace:#14212b; --grid:#eef1f4;
   --f-display:"Space Grotesk",system-ui,sans-serif; --f-body:"Inter",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0d1519; --panel:#142027; --ink:#e3ecef; --muted:#93a6af; --line:#24343c;
-  --accent:#ff9d5c; --accent-soft:#3a2416; --keep:#4fd08a; --drop:#3a4a52; --warn:#ff7a62; --trace:#e3ecef; --grid:#1c2a31; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0d1519; --panel:#142027; --ink:#e3ecef; --muted:#93a6af; --line:#24343c;
-  --accent:#ff9d5c; --accent-soft:#3a2416; --keep:#4fd08a; --drop:#3a4a52; --warn:#ff7a62; --trace:#e3ecef; --grid:#1c2a31; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
@@ -98,15 +92,43 @@ code{font-family:var(--f-mono);font-size:13px}
 .cfig figcaption{font-size:13px;color:var(--muted);margin-top:4px;max-width:60ch}
 .notes.ex summary{color:var(--warn)}
 .notes p{margin:8px 0}
+
+/* calm white reading layout */
+body{font-size:16px;line-height:1.7;color-scheme:light}
+.wrap{max-width:1120px;gap:40px;grid-template-columns:230px minmax(0,1fr)}
+header{border-bottom:1px solid var(--line);padding-bottom:14px}
+h1{font-size:26px}
+nav button{padding:7px 10px;font-size:14.5px;line-height:1.4}
+nav button[aria-current="true"]{background:var(--accent-soft);border-color:transparent;color:var(--ink)}
+.lesson{border:none;padding:4px 0 40px;gap:10px;background:transparent}
+.lesson h2{font-size:28px;margin-bottom:6px}
+.oneline{font-size:18px;line-height:1.6;color:var(--ink);margin:4px 0 8px;max-width:70ch;padding-left:14px;border-left:3px solid var(--accent)}
+.lesson h3.sh{font-family:var(--f-display);font-size:19px;margin:26px 0 6px;color:var(--ink);text-transform:none;letter-spacing:0}
+.lesson h3.sh span{color:var(--accent);margin-right:8px;font-family:var(--f-mono);font-size:15px}
+.talk{max-width:70ch}.talk p{margin:0 0 12px}.talk ul,.talk ol{margin:0 0 12px;padding-left:22px}.talk li{margin:4px 0}
+.flist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;max-width:70ch}
+.flist li{font-family:var(--f-mono);font-size:14.5px;background:#f6f7f9;border-radius:6px;padding:7px 12px;overflow-x:auto}
+.steps{max-width:70ch;padding-left:22px;margin:0}.steps li{margin:5px 0}
+.exbox{max-width:72ch;border:1px solid var(--line);border-radius:10px;padding:14px 18px}
+.exbox .q{font-weight:600;margin:0 0 8px}
+.exbox ol{margin:0 0 10px;padding-left:22px}.exbox li{margin:4px 0}
+.ans{display:inline-block;background:#e9f6ee;color:#1d5c37;border-radius:6px;padding:4px 12px;font-weight:600}
+.figs{margin-top:4px}
+.cfig figcaption{font-size:14px}
+details.notes{border:1px solid var(--line);border-radius:10px;background:#fafbfc;margin-top:18px;max-width:none}
+details.notes summary{font-size:16px}
+.notes.ex summary{color:var(--accent)}
+@media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr);gap:16px}}
+.tryh{text-transform:none;letter-spacing:0;font-size:19px;color:var(--ink);border-top:1px solid var(--line);padding-top:24px;margin-top:24px}
 .home{display:inline-block;margin-bottom:8px;color:var(--accent);text-decoration:none;font-weight:500}.home:hover{text-decoration:underline}
-:root{color-scheme:light}body{margin:0}
+body{margin:0}
 </style>
 
 </head><body>
 <div class="wrap">
 <header><a class="home" href="../">← All chapters</a>
   <h1>Chapter 4 Fourier Series Lab</h1>
-  <p>Follows your typeset notes section by section (4.1 → 4.7). Each page starts with the big idea, formulas, a how-to and a concept picture, then the detailed notes, including Examples 4.1–4.9, then a live plot you control and check questions.</p>
+  <p>Follows your typeset notes section by section (4.1 → 4.7). Each page explains the idea in plain words, shows a picture, lists the formulas and walks through a worked example, then the full class notes, including Examples 4.1–4.9, then a live plot you control and check questions.</p>
 </header>
 <nav id="nav" aria-label="Sections"></nav>
 <main id="main"></main>
@@ -226,6 +248,38 @@ const KEY={
  f:['orthogonal axes: c<sub>i</sub> = ⟨x, φ<sub>i</sub>⟩ / ‖φ<sub>i</sub>‖²','⟨x, y⟩ = ∫<sub>0</sub><sup>T<sub>0</sub></sup> x(t)y*(t) dt','‖e<sup>jnω<sub>0</sub>t</sup>‖² = T<sub>0</sub>  ⇒  c<sub>n</sub> = (1/T<sub>0</sub>)∫x e<sup>−jnω<sub>0</sub>t</sup>dt'],
  steps:['Vectors: φ<sub>1</sub> = [1,1], φ<sub>2</sub> = [−1,1], x = [7,5] → c<sub>1</sub> = 12/2 = 6, c<sub>2</sub> = −2/2 = −1.','Signals: same formula with the integral inner product = the c<sub>n</sub> formula.'],
  fig:()=>FIG([(()=>{const o=60,b=180,S=22,P=(x,y)=>[o+x*S,b-y*S];let s=`<line x1="20" y1="${b}" x2="230" y2="${b}" stroke="var(--muted)"/><line x1="${o}" y1="${b+5}" x2="${o}" y2="10" stroke="var(--muted)"/>`;const ar=(x,y,c,l,dx=6,dy=-4)=>{const[p,q]=P(x,y);return `<line x1="${o}" y1="${b}" x2="${p}" y2="${q}" stroke="${c}" stroke-width="2.4" marker-end="url(#ai)"/>`+`<text x="${p+dx}" y="${q+dy}" font-size="12" fill="${c}" font-weight="600">${l}</text>`;};s+=ar(6,6,'var(--keep)','6φ1',-40,-6)+ar(1,1,'var(--accent)','φ1')+ar(-1,1,'var(--accent)','φ2',-22)+ar(7,5,'var(--ink)','x = [7,5]',6,10);const[p,q]=P(6,6),[u,v]=P(7,5);s+=`<line x1="${p}" y1="${q}" x2="${u}" y2="${v}" stroke="var(--warn)" stroke-dasharray="4 3" stroke-width="1.6"/>`;return svg(250,200,s);})(),'Project x onto each perpendicular axis: 6 along φ1, −1 along φ2. Fourier coefficients work the same way.'])}
+};
+/* ---------- plain-language explanations ---------- */
+const PLAIN={
+'4.1':{talk:`<p><b>Big idea:</b> any signal that repeats can be built by adding up simple waves.</p>
+<p>If the signal repeats every T<sub>0</sub> seconds, the waves you need are at the "base" frequency ω<sub>0</sub> = 2π/T<sub>0</sub> and its multiples 2ω<sub>0</sub>, 3ω<sub>0</sub>, … (called harmonics).</p>
+<p>The number <b>c<sub>n</sub></b> tells you <b>how much</b> of harmonic n is in the signal. You find it with one integral over one period.</p>
+<ul><li>c<sub>0</sub> is just the <b>average</b> of the signal (the DC part).</li><li>For n ≠ 0, integrate x(t)·e<sup>−jnω<sub>0</sub>t</sup> over one period, divide by T<sub>0</sub>.</li></ul>
+<p>Adding more harmonics gives a better copy of the signal. Near sudden jumps there's always a small ~9% overshoot (Gibbs).</p>`,
+ex:{q:'Square wave: x = 1 on (0,1), 0 on (1,2), period 2. Find c<sub>0</sub> and c<sub>n</sub>.',s:['T<sub>0</sub> = 2 → ω<sub>0</sub> = π.','c<sub>0</sub> = average = (1·1 + 0·1)/2 = ½.','c<sub>n</sub> = ½∫<sub>0</sub><sup>1</sup> e<sup>−jnπt</sup>dt = (1 − e<sup>−jnπ</sup>)/(j2nπ).','e<sup>−jnπ</sup> = (−1)<sup>n</sup>: even n → 0; odd n → 2/(j2nπ) = 1/(jπn).'],a:'c₀ = ½, cₙ = 1/(jπn) for odd n, 0 for even n'}},
+'4.2':{talk:`<p>Once you have the c<sub>n</sub>'s, draw them: a vertical line at each harmonic frequency nω<sub>0</sub>, as tall as |c<sub>n</sub>|. That picture is the <b>line spectrum</b>. It shows at a glance which frequencies are in the signal and how strong they are.</p>
+<p>You can also plot the angle ∠c<sub>n</sub> (phase spectrum).</p>
+<p><b>For real signals</b>, the left side mirrors the right: |c<sub>−n</sub>| = |c<sub>n</sub>| and ∠c<sub>−n</sub> = −∠c<sub>n</sub>. So you only need to compute the positive n.</p>`,
+ex:{q:'Square wave (c<sub>n</sub> = 1/(jπn), odd n). What are |c<sub>1</sub>|, |c<sub>3</sub>| and ∠c<sub>1</sub>?',s:['|c<sub>1</sub>| = 1/π ≈ 0.318.','|c<sub>3</sub>| = 1/(3π) ≈ 0.106.','1/j = −j, which points straight down → ∠c<sub>1</sub> = −90°.'],a:'0.318, 0.106, −90°'}},
+'4.3':{talk:`<p>The complex form uses both +n and −n. For real signals you can pair them up into ordinary cosines, which is easier to read.</p>
+<p><b>Polar form (most useful):</b> x(t) = c<sub>0</sub> + Σ 2|c<sub>n</sub>|cos(nω<sub>0</sub>t + ∠c<sub>n</sub>).</p>
+<ul><li>The cosine at harmonic n has amplitude <b>2|c<sub>n</sub>|</b> (the 2 comes from adding the +n and −n terms).</li><li>DC is c<sub>0</sub> with no 2.</li></ul>
+<p><b>Trig form:</b> the same with separate cos and sin: a<sub>n</sub> = 2Re{c<sub>n</sub>}, b<sub>n</sub> = −2Im{c<sub>n</sub>}.</p>
+<p><b>Going backwards:</b> A·cos(nω<sub>0</sub>t + θ) means c<sub>n</sub> = (A/2)e<sup>jθ</sup>.</p>`,
+ex:{q:'c<sub>0</sub> = 3, c<sub>1</sub> = 1 + j, all others 0. Write x(t) as cosines.',s:['|c<sub>1</sub>| = √2, ∠c<sub>1</sub> = 45°.','Amplitude = 2|c<sub>1</sub>| = 2√2.'],a:'x(t) = 3 + 2√2 cos(ω₀t + 45°)'}},
+'4.4':{talk:`<p>Put a repeating signal into a filter (an LTI system). The filter treats <b>each harmonic separately</b>:</p>
+<ul><li>multiply its size by |H| at that harmonic's frequency,</li><li>add ∠H to its phase.</li></ul>
+<p>So the output's coefficients are just d<sub>n</sub> = c<sub>n</sub>·H(jnω<sub>0</sub>). The output repeats with the same period.</p>
+<p>Example: a square wave through an RC lowpass loses its high harmonics, so its sharp corners get rounded.</p>`,
+ex:{q:'Sample P9(c): c<sub>n</sub> = (1 − e<sup>−1</sup>)/(1 + j2πn), ω<sub>0</sub> = 2π, H passes only |ω| &lt; 1 and 3 &lt; |ω| &lt; 5. Find y(t).',s:['Harmonics are at 0, ±6.28, ±12.6, …','Only ω = 0 falls inside a pass region.','y = c<sub>0</sub>·H(0) = c<sub>0</sub> = 1 − e<sup>−1</sup>.'],a:'y(t) = 1 − e⁻¹ (a constant)'}},
+'4.5':{talk:`<p><b>Parseval:</b> the average power of the signal = the sum of the powers of each harmonic.</p>
+<p>Easiest way to use it: write x as DC + cosines, then add</p>
+<ul><li>DC²  for the constant,</li><li>A²/2 for each cosine of amplitude A.</li></ul>
+<p>With c<sub>n</sub>'s: P = c<sub>0</sub>² + Σ 2|c<sub>n</sub>|². Remember |a + jb|² = a² + b² (no square root).</p>`,
+ex:{q:'c<sub>0</sub> = 2, c<sub>1</sub> = 1, c<sub>2</sub> = 2 + j, others 0. Average power?',s:['c<sub>0</sub>² = 4.','2|c<sub>1</sub>|² = 2.','|2 + j|² = 4 + 1 = 5 → 2·5 = 10.','P = 4 + 2 + 10.'],a:'P = 16'}},
+'4.6':{talk:`<p>A nice way to see why the c<sub>n</sub> formula works: a signal is like an arrow (vector), and each harmonic e<sup>jnω<sub>0</sub>t</sup> is like an axis. All the axes are at right angles to each other.</p>
+<p>To find how much of an arrow points along an axis, you <b>project</b> it: c = ⟨x, axis⟩ / (length of axis)². For signals the "dot product" ⟨x, y⟩ is ∫x(t)y*(t)dt over one period, and the length² of each harmonic is T<sub>0</sub>, which is exactly where the 1/T<sub>0</sub> comes from.</p>`,
+ex:{q:'x = [7, 5], axes φ<sub>1</sub> = [1, 1], φ<sub>2</sub> = [−1, 1]. Find the coefficients.',s:['c<sub>1</sub> = (7 + 5)/2 = 6.','c<sub>2</sub> = (−7 + 5)/2 = −1.','Check: 6[1,1] − [−1,1] = [7, 5] ✓.'],a:'c₁ = 6, c₂ = −1'}}
 };
 const NOTES={
 '4.1':`
@@ -534,15 +588,18 @@ let cur=0;
 function show(i){
   cur=i;const nav=$('#nav');nav.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-current',k===i));
   const m=$('#main');m.innerHTML='';const sec=document.createElement('section');sec.className='lesson';
-  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null;
+  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null, P=(typeof PLAIN!=='undefined'&&PLAIN[L[i].k])||null;
+  let n=0;const H=t=>`<h3 class="sh"><span>${++n}</span>${t}</h3>`;
   sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div>`+
-  (K?`<div class="summary"><div class="kidea"><span class="tag">Big idea</span><p>${K.idea}</p></div>
-   <div class="sgrid"><div class="fbox"><h3>Formulas to know</h3><ul>${K.f.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-   <div class="howto"><h3>How to use it</h3><ol>${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol></div></div>
-   <div class="cpic"><h3>Picture it</h3>${K.fig()}</div></div>`:'')+
-  `<details class="notes"><summary>Full notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
-  (MORE[L[i].k]?`<details class="notes ex" open><summary>Worked examples &amp; exam traps</summary>${MORE[L[i].k]}</details>`:'')+
-  `<h3 class="tryh">Try it live</h3>`;
+  (K?`<p class="oneline">${K.idea}</p>`:'')+
+  (P?H('Explained simply')+`<div class="talk">${P.talk}</div>`:'')+
+  (K?H('Picture it')+K.fig():'')+
+  (K?H('Formulas you need')+`<ul class="flist">${K.f.map(x=>`<li>${x}</li>`).join('')}</ul>`:'')+
+  (K?H('How to solve a problem')+`<ol class="steps">${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol>`:'')+
+  (P&&P.ex?H('Worked example')+`<div class="exbox"><p class="q">${P.ex.q}</p><ol>${P.ex.s.map(x=>`<li>${x}</li>`).join('')}</ol><span class="ans">Answer: ${P.ex.a}</span></div>`:'')+
+  (MORE[L[i].k]?`<details class="notes ex"><summary>More examples &amp; exam traps (tap to open)</summary>${MORE[L[i].k]}</details>`:'')+
+  `<details class="notes"><summary>Full class notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
+  `<h3 class="tryh">Try it yourself</h3>`;
   const body=document.createElement('div');body.style.display='flex';body.style.flexDirection='column';body.style.gap='16px';sec.appendChild(body);m.appendChild(sec);
   L[i].build.call(L[i],body);
   const nr=document.createElement('div');nr.className='navrow';

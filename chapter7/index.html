@@ -7,16 +7,10 @@
 <style>
 /* Layout: a bench instrument. Left rail of six lessons, right panel = one lesson: idea, live scope, check questions. */
 :root{
-  --bg:#f3f6f7; --panel:#ffffff; --ink:#14212b; --muted:#5b6b75; --line:#d5dee3;
-  --accent:#5b47b8; --accent-soft:#ebe7fa; --keep:#1f8a4c; --drop:#b9c4ca; --warn:#c2412d; --trace:#14212b; --grid:#e7edf0;
+  --bg:#ffffff; --panel:#ffffff; --ink:#1f2933; --muted:#5f6b76; --line:#e6e9ed;
+  --accent:#5b47b8; --accent-soft:#ebe7fa; --keep:#1f8a4c; --drop:#b9c4ca; --warn:#c2412d; --trace:#14212b; --grid:#eef1f4;
   --f-display:"Space Grotesk",system-ui,sans-serif; --f-body:"Inter",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0d1519; --panel:#142027; --ink:#e3ecef; --muted:#93a6af; --line:#24343c;
-  --accent:#a593ff; --accent-soft:#2a2547; --keep:#4fd08a; --drop:#3a4a52; --warn:#ff7a62; --trace:#e3ecef; --grid:#1c2a31; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0d1519; --panel:#142027; --ink:#e3ecef; --muted:#93a6af; --line:#24343c;
-  --accent:#a593ff; --accent-soft:#2a2547; --keep:#4fd08a; --drop:#3a4a52; --warn:#ff7a62; --trace:#e3ecef; --grid:#1c2a31; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
@@ -98,15 +92,43 @@ code{font-family:var(--f-mono);font-size:13px}
 .cfig figcaption{font-size:13px;color:var(--muted);margin-top:4px;max-width:60ch}
 .notes.ex summary{color:var(--warn)}
 .notes p{margin:8px 0}
+
+/* calm white reading layout */
+body{font-size:16px;line-height:1.7;color-scheme:light}
+.wrap{max-width:1120px;gap:40px;grid-template-columns:230px minmax(0,1fr)}
+header{border-bottom:1px solid var(--line);padding-bottom:14px}
+h1{font-size:26px}
+nav button{padding:7px 10px;font-size:14.5px;line-height:1.4}
+nav button[aria-current="true"]{background:var(--accent-soft);border-color:transparent;color:var(--ink)}
+.lesson{border:none;padding:4px 0 40px;gap:10px;background:transparent}
+.lesson h2{font-size:28px;margin-bottom:6px}
+.oneline{font-size:18px;line-height:1.6;color:var(--ink);margin:4px 0 8px;max-width:70ch;padding-left:14px;border-left:3px solid var(--accent)}
+.lesson h3.sh{font-family:var(--f-display);font-size:19px;margin:26px 0 6px;color:var(--ink);text-transform:none;letter-spacing:0}
+.lesson h3.sh span{color:var(--accent);margin-right:8px;font-family:var(--f-mono);font-size:15px}
+.talk{max-width:70ch}.talk p{margin:0 0 12px}.talk ul,.talk ol{margin:0 0 12px;padding-left:22px}.talk li{margin:4px 0}
+.flist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;max-width:70ch}
+.flist li{font-family:var(--f-mono);font-size:14.5px;background:#f6f7f9;border-radius:6px;padding:7px 12px;overflow-x:auto}
+.steps{max-width:70ch;padding-left:22px;margin:0}.steps li{margin:5px 0}
+.exbox{max-width:72ch;border:1px solid var(--line);border-radius:10px;padding:14px 18px}
+.exbox .q{font-weight:600;margin:0 0 8px}
+.exbox ol{margin:0 0 10px;padding-left:22px}.exbox li{margin:4px 0}
+.ans{display:inline-block;background:#e9f6ee;color:#1d5c37;border-radius:6px;padding:4px 12px;font-weight:600}
+.figs{margin-top:4px}
+.cfig figcaption{font-size:14px}
+details.notes{border:1px solid var(--line);border-radius:10px;background:#fafbfc;margin-top:18px;max-width:none}
+details.notes summary{font-size:16px}
+.notes.ex summary{color:var(--accent)}
+@media (max-width:820px){.wrap{grid-template-columns:minmax(0,1fr);gap:16px}}
+.tryh{text-transform:none;letter-spacing:0;font-size:19px;color:var(--ink);border-top:1px solid var(--line);padding-top:24px;margin-top:24px}
 .home{display:inline-block;margin-bottom:8px;color:var(--accent);text-decoration:none;font-weight:500}.home:hover{text-decoration:underline}
-:root{color-scheme:light}body{margin:0}
+body{margin:0}
 </style>
 
 </head><body>
 <div class="wrap">
 <header><a class="home" href="../">← All chapters</a>
   <h1>Chapter 7 AM Lab</h1>
-  <p>Follows your typeset notes section by section (7.1 → 7.6). Each page starts with the big idea, formulas, a how-to and a concept picture, then the detailed notes, including Example 7.1 and the sample-midterm AM problems, then a live plot you control and check questions.</p>
+  <p>Follows your typeset notes section by section (7.1 → 7.6). Each page explains the idea in plain words, shows a picture, lists the formulas and walks through a worked example, then the full class notes, including Example 7.1 and the sample-midterm AM problems, then a live plot you control and check questions.</p>
 </header>
 <nav id="nav" aria-label="Sections"></nav>
 <main id="main"></main>
@@ -229,6 +251,41 @@ const KEY={
  steps:['QAM receiver: one branch × cos, one × sin, each then LPF.','φ = 0 → perfect separation; φ ≠ 0 → cross-talk.','SSB: modulate, BPF keeps one sideband, demodulate like SC-AM.'],
  fig:()=>FIG([sk({w:230,xr:[0,8],yr:[0,1.35],yaxis:false,ticks:[[4,'ωc']],items:[tr7(4,.9,'x1 (cos)','a',1.4),tr7(4,.6,'x2 (sin)','k',1.4)]}),'QAM: two messages share one band.'],
   [sk({w:230,xr:[0,8],yr:[0,1.35],yaxis:false,ticks:[[4,'ωc']],items:[{t:'fn',f:w=>w>=4&&w<=5.4?0.9*(1-(w-4)/1.4):0,fill:1},{t:'fn',f:w=>w<4&&w>=2.6?0.9*(1-(4-w)/1.4):0,c:'d',dash:1,lw:1.4}],labels:[[3.2,1.05,'cut','w'],[4.9,1.05,'USB kept','a']]}),'SSB: only one sideband is sent.'])}
+};
+/* ---------- plain-language explanations ---------- */
+const PLAIN={
+'7.1':{talk:`<p><b>Modulation</b> means putting a slow message (like your voice) onto a fast wave called the <b>carrier</b>, so it can travel through the air.</p>
+<p>In <b>AM</b> (amplitude modulation), the carrier's size goes up and down following the message.</p>
+<p>Why bother? Three reasons:</p>
+<ol><li><b>Antenna size.</b> An antenna must be about one wavelength long. For 5 kHz audio that's 60 km. On a 1 MHz carrier it's 300 m.</li><li><b>Propagation.</b> Some frequencies travel through the air better than others.</li><li><b>Sharing.</b> Each station uses its own carrier, so many can broadcast at once without overlapping.</li></ol>`,
+ex:{q:'What wavelength does a 540 kHz AM station have?',s:['λ = c/f, with c = 3×10⁸ m/s and f in Hz.','λ = 3×10⁸ / 540,000 ≈ 556 m.'],a:'≈ 556 m'}},
+'7.2':{talk:`<p><b>SC-AM</b> is the simplest AM: multiply the message by the carrier, y(t) = A·x(t)·cos(ω<sub>c</sub>t).</p>
+<p><b>What happens to the frequencies:</b> every frequency f in the message turns into two frequencies, <b>ω<sub>c</sub> − f</b> and <b>ω<sub>c</sub> + f</b> (from cos·cos = ½cos(difference) + ½cos(sum)).</p>
+<p>So the whole message spectrum gets copied to sit around +ω<sub>c</sub> and −ω<sub>c</sub>, each copy at half height. The part above ω<sub>c</sub> is the upper sideband; below is the lower sideband.</p>
+<p>Because each copy spans ω<sub>c</sub> − W to ω<sub>c</sub> + W, the bandwidth <b>doubles</b> to 2W.</p>
+<p>"Suppressed carrier" means there's no spike at ω<sub>c</sub> itself, only the shifted message.</p>`,
+ex:{q:'x(t) = cos(20t) is sent with SC-AM on cos(500t). Which frequencies are transmitted?',s:['cos(20t)cos(500t) = ½cos(480t) + ½cos(520t).','So two tones: 480 and 520 rad/s, each with amplitude ½.'],a:'480 and 520 rad/s'}},
+'7.3':{talk:`<p>The receiver needs to <b>shift the message back down</b> to where it started. The tool is the same one: multiply by the cosine again.</p>
+<p>Multiplying a second time creates two things:</p>
+<ul><li>a copy back at 0 → that's the message ✓</li><li>a copy up at 2ω<sub>c</sub> → junk</li></ul>
+<p>A <b>lowpass filter</b> keeps the part at 0 and throws away the junk. Output: (B/2)·x(t), the message at half size.</p>
+<p><b>The catch:</b> the receiver's cosine must be in step with the transmitter's. If it's off by a phase φ, the output is multiplied by cos φ. At φ = 90°, the output is zero. That's why this is called <b>coherent</b> (in-step) demodulation, and why it needs an expensive sync circuit.</p>`,
+ex:{q:'Received: cos(10t)·cos(1000t). Receiver multiplies by cos(1000t) and lowpass-filters. Output?',s:['First product: ½cos(990t) + ½cos(1010t).','Multiply each by cos(1000t): ¼cos(10t) + ¼cos(1990t) + ¼cos(10t) + ¼cos(2010t).','LPF keeps only the slow part: ½cos(10t).'],a:'½cos(10t), the message at half size'}},
+'7.4':{talk:`<p><b>LC-AM</b> is ordinary AM radio. Its goal: make the <b>receiver cheap</b> by avoiding the in-step cosine.</p>
+<p>The trick: add a constant M to the message before multiplying, y = A[M + x(t)]cos(ω<sub>c</sub>t), with M big enough that M + x(t) never goes negative.</p>
+<p>Then the <b>outline (envelope)</b> of the wave is exactly M + x(t). A simple diode circuit (an envelope detector) traces that outline, and a DC block removes M. Done, no sync needed.</p>
+<p><b>The price:</b> the carrier part (from M) carries no information but uses power. Total power = (A²/2)(M² + P<sub>x</sub>). For a single tone, at most 1/3 of the power is useful.</p>
+<p>In the spectrum, LC-AM looks like SC-AM plus a spike at ±ω<sub>c</sub> (the carrier).</p>`,
+ex:{q:'Sample P1: x(t) = A(1 + cos 2ω<sub>0</sub>t)cos 40ω<sub>0</sub>t has power 9. Find A.',s:['This is LC-AM with M = 1 and message cos(2ω<sub>0</sub>t).','Message power: P<sub>x</sub> = 1²/2 = ½.','P = (A²/2)(M² + P<sub>x</sub>) = (A²/2)(1.5) = 3A²/4.','3A²/4 = 9 → A² = 12.'],a:'A = √12 (choice a)'}},
+'7.5':{talk:`<p>A radio must pick <b>one station</b> out of 107. Building a sharp filter you can retune to every station is expensive.</p>
+<p><b>Superheterodyne idea:</b> build <b>one</b> good, fixed filter at a frequency called the IF (455 kHz). Then use a mixer to <b>move whichever station you want</b> onto the IF. Turning the dial just changes the mixer frequency (the local oscillator, LO).</p>
+<p><b>Choosing the LO:</b> the mixer creates "LO ± station", and you want the difference to equal the IF. So f<sub>LO</sub> = f<sub>c</sub> + f<sub>IF</sub> (high LO) or f<sub>c</sub> − f<sub>IF</sub> (low LO).</p>
+<p><b>The image problem:</b> another station on the <i>other</i> side of the LO, at the same distance f<sub>IF</sub>, also lands on the IF. It sits 2f<sub>IF</sub> away from your station. You block it with a cheap filter <b>before</b> the mixer.</p>`,
+ex:{q:'Sample P8: f<sub>IF</sub> = 200 kHz, station at 720 kHz, larger LO. Find f<sub>LO</sub> and the image.',s:['High LO: f<sub>LO</sub> = 720 + 200 = 920 kHz.','Image is on the other side of the LO: 920 + 200 = 1120 kHz (= 720 + 2·200).','Image filter must pass 715–725 kHz and block 1115–1125 kHz.'],a:'LO = 920 kHz, image = 1120 kHz'}},
+'7.6':{talk:`<p>Normal AM wastes bandwidth: the upper and lower sidebands carry the <b>same</b> information. Two fixes:</p>
+<p><b>QAM:</b> send <b>two</b> messages in the same band, one on cos(ω<sub>c</sub>t) and one on sin(ω<sub>c</sub>t). Cos and sin are 90° apart, so the receiver can separate them: multiply by cos to get message 1, by sin to get message 2. If the receiver's phase is off, the messages leak into each other (cross-talk).</p>
+<p><b>SSB:</b> filter away one sideband before sending. Bandwidth halves from 2W to W. Demodulate like SC-AM.</p>`,
+ex:{q:'QAM receiver with phase error φ = 30°, equal message powers, no noise. Signal-to-interference ratio for message 1?',s:['SINR = cos²φ / sin²φ.','cos²30° = 0.75, sin²30° = 0.25.','SINR = 3 (≈ 4.8 dB).'],a:'3'}}
 };
 const NOTES={
 '7.1':`
@@ -556,15 +613,18 @@ let cur=0;
 function show(i){
   cur=i;const nav=$('#nav');nav.querySelectorAll('button').forEach((b,k)=>b.setAttribute('aria-current',k===i));
   const m=$('#main');m.innerHTML='';const sec=document.createElement('section');sec.className='lesson';
-  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null;
+  const K=(typeof KEY!=='undefined'&&KEY[L[i].k])||null, P=(typeof PLAIN!=='undefined'&&PLAIN[L[i].k])||null;
+  let n=0;const H=t=>`<h3 class="sh"><span>${++n}</span>${t}</h3>`;
   sec.innerHTML=`<div><div class="eyebrow">Notes §${L[i].s} · page ${i+1} of ${L.length}</div><h2>${L[i].s} ${L[i].t}</h2></div>`+
-  (K?`<div class="summary"><div class="kidea"><span class="tag">Big idea</span><p>${K.idea}</p></div>
-   <div class="sgrid"><div class="fbox"><h3>Formulas to know</h3><ul>${K.f.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-   <div class="howto"><h3>How to use it</h3><ol>${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol></div></div>
-   <div class="cpic"><h3>Picture it</h3>${K.fig()}</div></div>`:'')+
-  `<details class="notes"><summary>Full notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
-  (MORE[L[i].k]?`<details class="notes ex" open><summary>Worked examples &amp; exam traps</summary>${MORE[L[i].k]}</details>`:'')+
-  `<h3 class="tryh">Try it live</h3>`;
+  (K?`<p class="oneline">${K.idea}</p>`:'')+
+  (P?H('Explained simply')+`<div class="talk">${P.talk}</div>`:'')+
+  (K?H('Picture it')+K.fig():'')+
+  (K?H('Formulas you need')+`<ul class="flist">${K.f.map(x=>`<li>${x}</li>`).join('')}</ul>`:'')+
+  (K?H('How to solve a problem')+`<ol class="steps">${K.steps.map(x=>`<li>${x}</li>`).join('')}</ol>`:'')+
+  (P&&P.ex?H('Worked example')+`<div class="exbox"><p class="q">${P.ex.q}</p><ol>${P.ex.s.map(x=>`<li>${x}</li>`).join('')}</ol><span class="ans">Answer: ${P.ex.a}</span></div>`:'')+
+  (MORE[L[i].k]?`<details class="notes ex"><summary>More examples &amp; exam traps (tap to open)</summary>${MORE[L[i].k]}</details>`:'')+
+  `<details class="notes"><summary>Full class notes · §${L[i].s} (tap to open)</summary>${NOTES[L[i].k]||''}</details>`+
+  `<h3 class="tryh">Try it yourself</h3>`;
   const body=document.createElement('div');body.style.display='flex';body.style.flexDirection='column';body.style.gap='16px';sec.appendChild(body);m.appendChild(sec);
   L[i].build.call(L[i],body);
   const nr=document.createElement('div');nr.className='navrow';
